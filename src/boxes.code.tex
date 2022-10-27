@@ -1,0 +1,66 @@
+% boxes.code
+
+\RequirePackage{tikz}
+
+% counters and lengths
+\newlength{\BoxWidth}
+\newlength{\BoxHSpacing}
+
+% defaults
+\setlength{\BoxHSpacing}{1em}
+
+% Tikz
+\tikzset{
+    picture box/.style = {
+        baseline = (text.base),
+    },
+    every text node/.style = {
+        draw = \CurrentBGColor!70!black, ultra thick,
+        ultra thick,
+        text = \CurrentFGColor,
+        font = \footnotesize,
+        text width = \BoxWidth,
+        inner xsep = 0.75em,
+        inner ysep = 0.5em,
+        shade,
+        right color = \CurrentBGColor!70,
+        left color = \CurrentBGColor,
+        % bottom color = \CurrentBGColor!50,
+    },
+}
+
+\NewDocumentCommand{\BoxBody}{}{}
+\NewDocumentCommand{\HBox}{m}{%
+    \UseColor{palette_i}%
+    \RenewDocumentCommand{\BoxBody}{}{\trim@spaces{#1}}%
+    \begingroup%
+    \ifUseBeamer%
+        \setbeamerfont{itemize/enumerate body}{size = \footnotesize}%
+        \setbeamercolor{itemize/enumerate body}{fg = \CurrentFGColor}%
+        \setbeamercolor{structure}{fg = \CurrentFGColor}%
+    \fi%
+    \begin{tikzpicture}[picture box]
+        \node[every text node] (text) {\raggedright\BoxBody\strut};
+    \end{tikzpicture}%
+    \endgroup%
+    \StepColor{palette_i}%
+    \ifnum\thecurrentitemnumber=\thenumgathereditems\else%
+    \hfill%
+    \fi%
+}
+
+% Environments
+\RequirePackage{getitems}
+
+\NewEnviron{horizontalbox}[1][]{%
+    \expandafter\gatheritems\expandafter{\BODY}%
+    \ResetColors{palette_i}%
+    \setlength{\BoxWidth}{
+        \dimexpr \textwidth/\thenumgathereditems - 1.5em -
+        \BoxHSpacing
+    }%
+    \loopthroughitemswithcommand{\HBox}%
+}
+
+
+\endinput

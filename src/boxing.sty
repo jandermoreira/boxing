@@ -1,0 +1,33 @@
+%! Package = boxing
+%! Author = jander
+%! Date = 26/10/2022
+
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{boxing}[2022/10/26 Text boxes for presentations]
+
+% Package options
+\newif\ifUseBeamer
+\UseBeamerfalse
+\DeclareOption{beamer}{
+    \UseBeamertrue
+}
+\ProcessOptions
+
+\input{colors.code.tex}
+
+
+\NewColorList{main}
+% \SetColorList{main}{dGamboge, dDarkJungleGreen, dHunterGreen, dRussianViolet, dCaputMortuum}
+\SetColorList{main}{red, green, blue, orange}
+% \SetColorList{main}{itemize/enumerate body.fg}
+
+\NewColorList{second level}
+% \SetColorList{second level}{dHunterGreen, dGamboge}
+\SetColorList{second level}{brown, black, yellow}
+% \SetColorList{second level}{itemize/enumerate subbody.fg}
+
+
+% Modules
+
+\input{boxes.code.tex}
+
