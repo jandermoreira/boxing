@@ -1,2 +1,2 @@
 # boxing
-LaTeX package to draw boxes
+$LaTeX$ package to draw boxes
