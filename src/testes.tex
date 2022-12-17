@@ -15,24 +15,32 @@
 
 \usepackage[beamer]{boxing}
 
+\usepackage[sfdefault]{FiraSans} %% option 'sfdefault' activates Fira Sans as the default text font
+\usepackage[T1]{fontenc}
+% \renewcommand*\oldstylenums[1]{{\firaoldstyle #1}}
+
+
 \begin{document}
 
 \begin{frame}
     Things that work
 
     \bigskip
-    \begin{horizontalbox}
-        \item \textbf{Algoritmos}\vspace{1em}\newline
-        Especificação clara e precisa de uma solução de forma independente de linguagem de programação
-        \item define several commands to realize calculations within a \LaTeX
-        \begin{itemize}
-            \item Um
-            \item Dois
-        \end{itemize}
-        Next
+    \hrulefill
+    \begin{mybox}
+        % \item \textbf{Algoritmos}\newline
+        % Especificação clara e precisa de uma solução de forma independente de linguagem de programação
+        % \item Define several commands to realize calculations within a \LaTeX
+        % \begin{itemize}
+        %     \item Um
+        %     \item Dois
+        % \end{itemize}
+        % Next
         \item document. The calculator package introduces
-        % \item several new instructions that allow you to calculate with integer and real numbers using
-    \end{horizontalbox}
+        \item several new instructions that allow you to calculate with integer and real numbers using
+        \pause
+        \item [$\equiv$]\textbf{Ci}\textit{nco}!
+    \end{mybox}
 
     \bigskip
     Or not\ldots

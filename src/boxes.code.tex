@@ -35,9 +35,9 @@
     \RenewDocumentCommand{\BoxBody}{}{\trim@spaces{#1}}%
     \begingroup%
     \ifUseBeamer%
-        \setbeamerfont{itemize/enumerate body}{size = \footnotesize}%
-        \setbeamercolor{itemize/enumerate body}{fg = \CurrentFGColor}%
-        \setbeamercolor{structure}{fg = \CurrentFGColor}%
+    \setbeamerfont{itemize/enumerate body}{size = \footnotesize}%
+    \setbeamercolor{itemize/enumerate body}{fg = \CurrentFGColor}%
+    \setbeamercolor{structure}{fg = \CurrentFGColor}%
     \fi%
     \begin{tikzpicture}[picture box]
         \node[every text node] (text) {\raggedright\BoxBody\strut};
@@ -62,5 +62,128 @@
     \loopthroughitemswithcommand{\HBox}%
 }
 
+\RequirePackage{ragged2e}
+
+\RequirePackage{tcolorbox}
+\tcbuselibrary{raster, skins}
+\usetikzlibrary{calc}
+\usetikzlibrary{overlay-beamer-styles}
+\NewExpandableDocumentCommand{\TCBBox}{ m m +m }{%
+    % \begin{tcolorbox}
+    %     [
+    %     left = 0pt,
+    %     right = 0pt,
+    %     % top = 0pt,
+    %     bottom = 0pt,
+    %     fontupper = \small,
+    %     fontlower = \small,
+    %     coltext = \CurrentFGColor,
+    %     colback = \CurrentBGColor,
+    %     colframe = \CurrentBGColor!70!black,
+    %     enhanced,
+    %     enlarge top by = 1emm,
+    %     interior style = {
+    %         top color = \CurrentBGColor,
+    %         bottom color = \CurrentBGColor!60!white,
+    %     },
+    %     enlarge top by = 1em,
+    %     overlay = {
+    %         \path [fill = \CurrentBGColor!90!black, very thick] ($(frame.north west) + (1em, 0)$) arc (0:360:1em);
+    %         \path [draw = \CurrentBGColor!70!black, very thick] ($(frame.north west) + (1em, 0)$) arc (0:270:1em);
+    %         \node[font = \Large\itshape, text = \CurrentFGColor] at (frame.north west) {#2};
+    %     },
+    %     ]
+    %     \RaggedRight<#1>
+    %     \expandafter\only\expandafter<#1>{#3}
+    % \end{tcolorbox}%
+    \expandafter\visible\expandafter<#1>{#3}\par
+}
+% \ExplSyntaxOn
+% \cs_new:Npn \is_empty:N #1 {
+%     \tl_count:N #1
+% }
+% \NewExpandableDocumentCommand{\IsEmpty}{ m }{
+%     \is_empty:N { #1 }
+% }
+% \ExplSyntaxOff
+
+\NewDocumentCommand{\TCB}{ +m }{%
+    \UseColor{palette_i}%
+    \ProcessItemArguments{\l@overlay}{\l@option}{\l@text}{#1}%
+    % \par ([\l@overlay]/[\l@option])
+    \ifx\l@overlay\empty%
+    \RenewDocumentCommand{\l@overlay}{}{+-}%
+    \fi
+    \ifx\l@option\empty%
+    \RenewDocumentCommand{\l@option}{}{\thecurrentitemnumber}%
+    \fi%
+    \ifUseBeamer%
+    \setbeamerfont{itemize/enumerate body}{size = \footnotesize}%
+    \setbeamercolor{itemize/enumerate body}{fg = \CurrentFGColor}%
+    \setbeamercolor{structure}{fg = \CurrentFGColor}%
+    \fi%
+    % [<\l@overlay>[\l@option]\l@text]\par
+    % \visible<\l@overlay>{%
+    \TCBBox{\l@overlay}{\l@option}{\l@text}%
+    % }%
+    \StepColor{palette_i}%
+}
+
+\NewEnviron{mybox}{%
+    \begingroup%
+    \expandafter\gatheritems\expandafter{\BODY}%
+    \ResetColors{palette_i}%
+    \begin{tcbraster}[
+        raster columns = \thenumgathereditems,
+        raster equal height,
+        nobeforeafter,
+        raster column skip = 1.1em,
+    ]
+        \loopthroughitemswithcommand{\TCB}%
+    \end{tcbraster}%
+    \endgroup%
+}
+
+\ExplSyntaxOn
+\cs_new:Npn \gather_beamer_item_options:NNNn #1#2#3#4 {
+    \tl_clear_new:N \g_item_overlay_spec_tl
+    \tl_clear_new:N \g_item_option_spec_tl
+    \tl_clear_new:N \g_item_text_tl
+    \regex_extract_once:nnNTF { \A<(.*?)>\s*\[(.*?)\](.*) } { #4 } \g_item_structure_seq { % <> and []
+        \tl_set:Nn \g_item_overlay_spec_tl { \seq_item:Nn \g_item_structure_seq { 2 } }
+        \tl_set:Nn \g_item_option_spec_tl { \seq_item:Nn \g_item_structure_seq { 3 } }
+        \tl_set:Nn \g_item_text_tl { \seq_item:Nn \g_item_structure_seq { 4 } }
+    } { % [] and <>
+        \regex_extract_once:nnNTF { \A\[(.*?)\]\s*<(.*?)>(.*) } { #4 } \g_item_structure_seq {
+            \tl_gset:Nn \g_item_overlay_spec_tl { \seq_item:Nn \g_item_structure_seq { 3 } }
+            \tl_gset:Nn \g_item_option_spec_tl { \seq_item:Nn \g_item_structure_seq { 2 } }
+            \tl_gset:Nn \g_item_text_tl { \seq_item:Nn \g_item_structure_seq { 4 } }
+        } { % only <>
+            \regex_extract_once:nnNTF { \A<(.*?)>(.*) } { #4 } \g_item_structure_seq {
+                \tl_gset:Nn \g_item_overlay_spec_tl { \seq_item:Nn \g_item_structure_seq { 2 } }
+                % \tl_gset:Nn \g_item_option_spec_tl { \empty }
+                \tl_gset:Nn \g_item_text_tl { \seq_item:Nn \g_item_structure_seq { 3 } }
+            } { % only []
+                \regex_extract_once:nnNTF { \A\[(.*?)\](.*) } { #4 } \g_item_structure_seq {
+                % \tl_gset:Nn \g_item_overlay_spec_tl { \empty }
+                    \tl_gset:Nn \g_item_option_spec_tl { \seq_item:Nn \g_item_structure_seq { 2 } }
+                    \tl_gset:Nn \g_item_text_tl { \seq_item:Nn \g_item_structure_seq { 3 } }
+                } { % only text
+                % \tl_gset:Nn \g_item_overlay_spec_tl { \empty }
+                % \tl_gset:Nn \g_item_option_spec_tl { \empty }
+                    \tl_gset:Nn \g_item_text_tl { #4 }
+                }
+            }
+        }
+    }
+    \exp_args:NNx \tl_set:Nn #1 { \g_item_overlay_spec_tl }
+    \exp_args:NNV \tl_set:Nn #2 { \g_item_option_spec_tl }
+    \exp_args:NNV \tl_set:Nn #3 { \g_item_text_tl }
+}
+
+\NewDocumentCommand{\ProcessItemArguments}{ m m m +m }{
+    \gather_beamer_item_options:NNNn { #1 } { #2 } { #3 } { #4 }
+}
+\ExplSyntaxOff
 
 \endinput
