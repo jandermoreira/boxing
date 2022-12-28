@@ -1,29 +1,49 @@
+
+\RequirePackage{xcolor}
+
 \ExplSyntaxOn
 
+% Variants
 \cs_generate_variant:Nn \int_set:Nn { cn }
 \cs_generate_variant:Nn \seq_set_split:Nnn { cnn }
 
+% Variables
 \tl_new:N \g_current_fg_color_tl
 \tl_new:N \g_current_bg_color_tl
 \tl_set:Nn \g_current_fg_color_tl { normal~text.fg }
-\tl_set:Nn \g_current_bg_color_tl { none }
+\tl_set:Nn \g_current_bg_color_tl { . }
 \seq_new:N \l_color_seq
 
-\cs_new:Npn \reset_color:n #1 {
+% NewPalette:
+\cs_new:Npn \new_palette:n #1 {
+    \seq_new:c { g_#1_colors_seq }
+    \int_new:c { g_#1_current_int }
+    \reset_palette:n { #1 }
+}
+\NewDocumentCommand{\NewPalette}{m}{
+    \new_palette:n { #1 }
+}
+
+% SetPalette:
+\cs_new:Npn \set_palette:nn #1#2 {
+    \seq_set_split:cnn { g_#1_colors_seq } { , } { #2 }
+}
+\NewDocumentCommand{\SetPalette}{mm}{
+    \set_palette:nn { #1 } { #2 }
+}
+
+% ResetPalette:
+\cs_new:Npn \reset_palette:n #1 {
     \int_set:cn { g_#1_current_int } { 0 }
     \tl_gset:Nn \g_current_fg_color_tl {
         \seq_item:cn { g_#1_colors_seq  }{ 1 }
     }
+}
+\NewDocumentCommand{\ResetPalette}{m}{
+    \reset_palette:n { #1 }
+}
 
-}
-\cs_new:Npn \new_color_list:n #1 {
-    \seq_new:c { g_#1_colors_seq }
-    \int_new:c { g_#1_current_int }
-    \reset_color:n { #1 }
-}
-\cs_new:Npn \set_color_list:nn #1#2 {
-    \seq_set_split:cnn { g_#1_colors_seq } { , } { #2 }
-}
+% UsePalette:
 \cs_new:Npn \set_fg_bg:n #1 {
     \regex_extract_once:nnNTF { (.*?)\s*on\s*(.*) } { #1 } \l_color_seq {
         \tl_gset:Nn \g_current_fg_color_tl { \seq_item:Nn \l_color_seq { 2 } }
@@ -33,13 +53,18 @@
         \tl_gset:Nn \g_current_bg_color_tl { #1 }
     }
 }
-\cs_new:Npn \use_color:n #1 {
+\cs_new:Npn \use_palette:n #1 {
     \tl_set:Nn \l_current_color_tl {
         \seq_item:cn { g_#1_colors_seq  }{\int_use:c { g_#1_current_int } + 1 }
     }
     \exp_args:Ne \set_fg_bg:n \l_current_color_tl
 }
-\cs_new:Npn \step_color:n #1 {
+\NewExpandableDocumentCommand{\UsePalette}{m}{
+    \use_palette:n { #1 }
+}
+
+% StepPalette:
+\cs_new:Npn \step_palette:n #1 {
     \int_if_exist:NTF \l_index_int {} { \int_new:N \l_index_int }
     \int_set:Nn \l_index_int { \int_use:c { g_#1_current_int } }
     \tl_gset:Nn \g_current_fg_color_tl {
@@ -49,33 +74,21 @@
         \int_mod:nn { \l_index_int + 1 } { \seq_count:c { g_#1_colors_seq } }
     }
 }
+\NewDocumentCommand{\StepPalette{m}{
+    \step_color:n { #1 }
+}
+
+% CurrentFGColor:
 \cs_new:Npn \get_current_fg_color: {
     \tl_use:N \g_current_fg_color_tl
 }
-\cs_new:Nn \get_current_bg_color: {
-    \tl_use:N \g_current_bg_color_tl
-}
-
-
-% document commands
-\NewDocumentCommand{\SetColorList}{mm}{
-    \set_color_list:nn { #1 } { #2 }
-}
-\NewDocumentCommand{\NewColorList}{m}{
-    \new_color_list:n { #1 }
-}
-
-\NewDocumentCommand{\StepColor}{m}{
-    \step_color:n { #1 }
-}
-\NewDocumentCommand{\ResetColors}{m}{
-    \reset_color:n { #1 }
-}
-\NewExpandableDocumentCommand{\UseColor}{m}{
-    \use_color:n { #1 }
-}
 \NewExpandableDocumentCommand{\CurrentFGColor}{}{
     \get_current_fg_color:
+}
+
+% CurrentBGColor
+\cs_new:Nn \get_current_bg_color: {
+    \tl_use:N \g_current_bg_color_tl
 }
 \NewExpandableDocumentCommand{\CurrentBGColor}{}{
     \get_current_bg_color:
@@ -86,17 +99,43 @@
 
 % Pallete I
 \definecolor{LightCornflowerBlue}{HTML}{8ecae6}
-\definecolor{Blue Green}{HTML}{219ebc}
+\definecolor{Blue Green}{HTML}{1C9B8E}
 \definecolor{Prussian Blue}{HTML}{023047}
 \definecolor{Selective Yellow}{HTML}{ffb703}
 \definecolor{Tangerine}{HTML}{fb8500}
-\NewColorList{palette_i}
-\SetColorList{palette_i}{
+\NewPalette{palette_i}
+\SetPalette{palette_i}{
     black on Selective Yellow,
     black on Blue Green,
     black on Tangerine,
     white on Prussian Blue,
     black on LightCornflowerBlue
+}
+
+% https://www.canva.com/colors/color-palettes/midnight-waters/
+\definecolor{Misty Blue}{HTML}{BDC6D9}
+\definecolor{Blue Gray}{HTML}{52688F}
+\definecolor{Misty Blue Light}{HTML}{E3E7F1}
+\definecolor{Cornflower}{HTML}{7391C8}
+\NewPalette{Midnight Waters}
+\SetPalette{Midnight Waters}{
+    black on Misty Blue,
+    black on Blue Gray,
+    black on Misty Blue Light,
+    black on Cornflower
+}
+
+% https://www.canva.com/colors/color-palettes/colored-coolers/
+\definecolor{Orange}{HTML}{F6A21E}
+\definecolor{Red Orange}{HTML}{E55B13}
+\definecolor{Forest Green}{HTML}{104210}
+\definecolor{Lime Green}{HTML}{7A871E}
+\NewPalette{Colored Coolers}
+\SetPalette{Colored Coolers}{
+    black on Orange,
+    black on Red Orange,
+    white on Forest Green,
+    black on Lime Green
 }
 
 

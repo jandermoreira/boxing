@@ -13,18 +13,21 @@
 }
 \ProcessOptions
 
-\input{colors.code.tex}
+% Keys
+\RequirePackage{pgfkeys}
+
+\input{palette.code}
 
 
-\NewColorList{main}
-% \SetColorList{main}{dGamboge, dDarkJungleGreen, dHunterGreen, dRussianViolet, dCaputMortuum}
-\SetColorList{main}{red, green, blue, orange}
-% \SetColorList{main}{itemize/enumerate body.fg}
+\NewPalette{main}
+% \SetPalette{main}{dGamboge, dDarkJungleGreen, dHunterGreen, dRussianViolet, dCaputMortuum}
+\SetPalette{main}{red, green, blue, orange}
+% \SetPalette{main}{itemize/enumerate body.fg}
 
-\NewColorList{second level}
-% \SetColorList{second level}{dHunterGreen, dGamboge}
-\SetColorList{second level}{brown, black, yellow}
-% \SetColorList{second level}{itemize/enumerate subbody.fg}
+\NewPalette{second level}
+% \SetPalette{second level}{dHunterGreen, dGamboge}
+\SetPalette{second level}{brown, black, yellow}
+% \SetPalette{second level}{itemize/enumerate subbody.fg}
 
 
 % Modules

@@ -1,15 +1,60 @@
 % boxes.code
 
-\RequirePackage{tikz}
+% Variables
+\NewDocumentCommand{\boxing@Colums}{}{}
+\NewDocumentCommand{\boxing@EqualHeight}{}{}
+\newif\ifboxing@Continued
 
-% counters and lengths
-\newlength{\BoxWidth}
-\newlength{\BoxHSpacing}
+\ExplSyntaxOn
+\NewDocumentCommand{\RenewFullyExpandedDocumentCommand} { m m }{
+    \exp_args:NNnV \RenewDocumentCommand #1 { } { #2 }
+}
+\ExplSyntaxOff
 
-% defaults
-\setlength{\BoxHSpacing}{1em}
+%! formatter = off
+\pgfkeys{
+    % /boxing/.is family,
+    /boxing/.cd,
+    % number of columns
+    columns/.is choice,
+    columns/auto/.code = {%
+        \RenewDocumentCommand{\boxing@Colums}{}{\thenumgathereditems}%
+    },
+    columns/.unknown/.code = {%
+        \RenewFullyExpandedDocumentCommand{\boxing@Colums}{\pgfkeyscurrentname}%
+    },
+    equal height/.is choice,
+    equal height/none/.code = {%
+        \RenewDocumentCommand{\boxing@EqualHeight}{}{none}%
+    },
+    equal height/rows/.code = {%
+        \RenewDocumentCommand{\boxing@EqualHeight}{}{rows}%
+    },
+    equal height/all/.code = {%
+        \RenewDocumentCommand{\boxing@EqualHeight}{}{all}%
+    },
+    % continue numbering?
+    continued/.is if = boxing@Continued,
+}
+%! formatter = on
+
+\NewDocumentCommand{\boxingset}{ >{\TrimSpaces} m }{%
+    \pgfkeys{
+        /boxing/.cd,
+        #1
+    }
+}
+
+% Default settings
+\boxingset{
+    columns = auto,
+    equal height = all,
+    continued = false,
+}
+
 
 % Tikz
+\RequirePackage{tikz}
 \tikzset{
     picture box/.style = {
         baseline = (text.base),
@@ -31,7 +76,7 @@
 
 \NewDocumentCommand{\BoxBody}{}{}
 \NewDocumentCommand{\HBox}{m}{%
-    \UseColor{palette_i}%
+    \UsePalette{palette_i}%
     \RenewDocumentCommand{\BoxBody}{}{\trim@spaces{#1}}%
     \begingroup%
     \ifUseBeamer%
@@ -43,7 +88,7 @@
         \node[every text node] (text) {\raggedright\BoxBody\strut};
     \end{tikzpicture}%
     \endgroup%
-    \StepColor{palette_i}%
+    \StepPalette{palette_i}%
     \ifnum\thecurrentitemnumber=\thenumgathereditems\else%
     \hfill%
     \fi%
@@ -54,7 +99,7 @@
 
 \NewEnviron{horizontalbox}[1][]{%
     \expandafter\gatheritems\expandafter{\BODY}%
-    \ResetColors{palette_i}%
+    \ResetPalette{palette_i}%
     \setlength{\BoxWidth}{
         \dimexpr \textwidth/\thenumgathereditems - 1.5em -
         \BoxHSpacing
@@ -65,38 +110,42 @@
 \RequirePackage{ragged2e}
 
 \RequirePackage{tcolorbox}
+\newif\ifUseIcon
+\UseIconfalse
 \tcbuselibrary{raster, skins}
 \usetikzlibrary{calc}
 \usetikzlibrary{overlay-beamer-styles}
-\NewExpandableDocumentCommand{\TCBBox}{ m m +m }{%
-    % \begin{tcolorbox}
-    %     [
-    %     left = 0pt,
-    %     right = 0pt,
-    %     % top = 0pt,
-    %     bottom = 0pt,
-    %     fontupper = \small,
-    %     fontlower = \small,
-    %     coltext = \CurrentFGColor,
-    %     colback = \CurrentBGColor,
-    %     colframe = \CurrentBGColor!70!black,
-    %     enhanced,
-    %     enlarge top by = 1emm,
-    %     interior style = {
-    %         top color = \CurrentBGColor,
-    %         bottom color = \CurrentBGColor!60!white,
-    %     },
-    %     enlarge top by = 1em,
-    %     overlay = {
-    %         \path [fill = \CurrentBGColor!90!black, very thick] ($(frame.north west) + (1em, 0)$) arc (0:360:1em);
-    %         \path [draw = \CurrentBGColor!70!black, very thick] ($(frame.north west) + (1em, 0)$) arc (0:270:1em);
-    %         \node[font = \Large\itshape, text = \CurrentFGColor] at (frame.north west) {#2};
-    %     },
-    %     ]
-    %     \RaggedRight<#1>
-    %     \expandafter\only\expandafter<#1>{#3}
-    % \end{tcolorbox}%
-    \expandafter\visible\expandafter<#1>{#3}\par
+\NewDocumentCommand{\TCBBox}{ m m +m }{%
+    \visible<#1>{%
+        \begin{tcolorbox}[
+        left = 0pt,
+        right = 0pt,
+        bottom = 0pt,
+        coltext = \CurrentFGColor,
+        colback = \CurrentBGColor,
+        colframe = \CurrentBGColor!70!black,
+        toprule = 0.1em,
+        bottomrule = 0.1em,
+        leftrule = 0.1em,
+        rightrule = 0.1em,
+        enhanced,
+        enlarge left by = 1em,
+        enlarge top by = 1em,
+        interior style = {
+            top color = \CurrentBGColor,
+            bottom color = \CurrentBGColor!60!white,
+        },
+        overlay = {
+            \coordinate (North West) at ($(frame.north west) + (0.05em, -0.05em)$);
+            \path [fill = \CurrentBGColor!90!black] (North West) circle (1em);
+            \path [thick, draw = \CurrentBGColor!30!white] (North West) circle (0.9em);
+            \path [draw = \CurrentBGColor!70!black, line width = 0.1em, ] ($(frame.north west) + (1.15em, -0.05em)$) -- ++(-0.1em, 0) arc (0:270:1em) -- ++(0, -0.1em);
+            \node[font = \itshape, align = center, text = \CurrentFGColor] at ($(frame.north west) + (0.05em, -0.05em)$) {\ifUseIcon\includegraphics[width = 1.4em, height = 1.4em]{icons/#2}\else\scalebox{1.44}{#2}\fi};
+        },
+        ]
+        \RaggedRight#3
+        \end{tcolorbox}%
+    }%
 }
 % \ExplSyntaxOn
 % \cs_new:Npn \is_empty:N #1 {
@@ -108,38 +157,56 @@
 % \ExplSyntaxOff
 
 \NewDocumentCommand{\TCB}{ +m }{%
-    \UseColor{palette_i}%
+    \UsePalette{Colored Coolers}%
     \ProcessItemArguments{\l@overlay}{\l@option}{\l@text}{#1}%
-    % \par ([\l@overlay]/[\l@option])
+    %! formatter = off
     \ifx\l@overlay\empty%
-    \RenewDocumentCommand{\l@overlay}{}{+-}%
+        \RenewExpandableDocumentCommand{\l@overlay}{}{1-}%
     \fi
     \ifx\l@option\empty%
-    \RenewDocumentCommand{\l@option}{}{\thecurrentitemnumber}%
+        \UseIconfalse%
+        \RenewExpandableDocumentCommand{\l@option}{}{\theCurrentItemNumber}%
+    \else
+        \UseIcontrue%
     \fi%
     \ifUseBeamer%
-    \setbeamerfont{itemize/enumerate body}{size = \footnotesize}%
-    \setbeamercolor{itemize/enumerate body}{fg = \CurrentFGColor}%
-    \setbeamercolor{structure}{fg = \CurrentFGColor}%
+        \setbeamerfont{itemize/enumerate body}{size = \footnotesize}%
+        \setbeamercolor{itemize/enumerate body}{fg = \CurrentFGColor}%
+        \setbeamercolor{structure}{fg = \CurrentFGColor}%
     \fi%
-    % [<\l@overlay>[\l@option]\l@text]\par
-    % \visible<\l@overlay>{%
+    %! formatter = on
     \TCBBox{\l@overlay}{\l@option}{\l@text}%
-    % }%
-    \StepColor{palette_i}%
+    \StepPalette{Colored Coolers}%
+    \stepcounter{CurrentItemNumber}%
 }
 
-\NewEnviron{mybox}{%
+\newcounter{CurrentItemNumber}
+\NewDocumentEnvironment{mybox}{ O{} +b }{%
     \begingroup%
-    \expandafter\gatheritems\expandafter{\BODY}%
-    \ResetColors{palette_i}%
+    \gatheritems{#2}%
+    %! formatter = off
+    \boxingset{continued = false}
+    \pgfkeys{%
+        /boxing/.cd,
+        #1
+    }%
+    \ifboxing@Continued\else
+        \ResetPalette{Colored Coolers}%
+        \setcounter{CurrentItemNumber}{1}%
+    \fi
+    %! formatter = on
     \begin{tcbraster}[
-        raster columns = \thenumgathereditems,
-        raster equal height,
+        raster columns = \boxing@Colums,
+        raster halign = center,
+        raster right skip = \dimexpr 1em * \kvtcb@raster@columns \relax,
         nobeforeafter,
-        raster column skip = 1.1em,
+        raster column skip = 0em,
+        /utils/exec = {%
+        \pgfkeysalsofrom{/tcb/raster equal height = \boxing@EqualHeight}%
+        },
     ]
         \loopthroughitemswithcommand{\TCB}%
+        }{%
     \end{tcbraster}%
     \endgroup%
 }
