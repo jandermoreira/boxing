@@ -1,0 +1,63 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%! Autor = Jander Moreira
+%! Data = 10/10/2022
+
+\documentclass[10pt]{beamer}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[brazilian]{babel}
+
+\usetheme{Monjolinho}
+
+\title{Title}
+\subtitle{Subtitle}
+\author{Author}
+
+\usepackage[beamer]{boxing}
+
+\usepackage[sfdefault]{FiraSans} %% option 'sfdefault' activates Fira Sans as the default text font
+\usepackage[T1]{fontenc}
+% \renewcommand*\oldstylenums[1]{{\firaoldstyle #1}}
+
+
+\begin{document}
+
+\begin{frame}
+    Things that work
+
+    \hrulefill
+    \bigskip
+    \small
+    \begin{mybox}[columns = auto, equal height = all]
+        \item % [multimedia-41/png-512/music-tune-512x512-1214508]
+        \textbf{Algoritmos}\newline
+        Especificação clara e precisa de uma solução
+        % \item %<2->[brand-logos-1/png-128/android-128x128-1306061]
+        % Define several commands for \LaTeX
+        % % \begin{itemize}
+        % %     \item Um
+        % %     \item Dois
+        % % \end{itemize}
+        % \item \textbf{Blender.}\newline Editor document. The calculator package introduces
+        \item Several new instructions
+        \item \textbf{Ci}\textit{nco}!
+        \item other
+        \item other\newline other\newline other
+        \item other
+    \end{mybox}
+    \hrulefill
+
+    \bigskip
+    Or not\ldots
+\end{frame}
+
+\begin{frame}
+    \begin{mybox}[continued, columns = auto]
+        \item More
+        \item and more
+        \item More
+        \item and more
+    \end{mybox}
+\end{frame}
+
+\end{document}
