@@ -1,0 +1,45 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%! Autor = Jander Moreira
+%! Data = 30/12/2022
+\documentclass[12pt]{article}
+\usepackage[T1]{fontenc}
+\usepackage{titling}
+\setlength{\droptitle}{-3cm}
+\usepackage{multicol}
+\usepackage{datetime}
+
+\title{Boxes}
+\author{Jander Moreira}
+\date{\monthname, \the\year}
+
+\usepackage{boxing}
+
+\begin{document}
+\maketitle
+
+\begin{mybox}[columns = 3, equal height = rows, palette = Two]
+    \item % [multimedia-41/png-512/music-tune-512x512-1214508]
+    \textbf{Algoritmos}\newline
+    Especificação de uma solução
+    \item %<2->[brand-logos-1/png-128/android-128x128-1306061]
+    Define several commands for \LaTeX
+    % \begin{itemize}
+    %     \item Um
+    %     \item Dois
+    % \end{itemize}
+    \item \textbf{Blender.}\newline Editor document. The calculator package introduces
+    \item Several new instructions
+    \item \textbf{Ci}\textit{nco}!
+    \item other
+    \item other\newline other\newline other
+    \item other
+\end{mybox}
+
+\begin{mybox}[continued, columns = 3, palette = Two]
+    \item More
+    \item <2> and more
+    \item More
+    \item and more
+\end{mybox}
+
+\end{document}

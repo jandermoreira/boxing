@@ -1,0 +1,194 @@
+%%
+%% This is file `getitems.sty',
+%% generated with the docstrip utility.
+%%
+%% The original source files were:
+%%
+%% getitems.dtx  (with options: `package')
+%%
+%% This is a generated file.
+%%
+%% Copyright (C) 2016 by Anders Hendrickson <anders.hendrickson@snc.edu>
+%%
+%% This work may be distributed and/or modified under the
+%% conditions of the LaTeX Project Public License, either version 1.3
+%% of this license or (at your option) any later version.
+%% The latest version of this license is in
+%%   http://www.latex-project.org/lppl.txt
+%% and version 1.3 or later is part of all distributions of LaTeX
+%% version 2005/12/01 or later.
+%%
+\NeedsTeXFormat{LaTeX2e}[1999/12/01]
+\ProvidesPackage{mygetitems}
+    [2016/01/11 v1.0 gather items from a list]
+
+
+\ExplSyntaxOn
+\cs_generate_variant:Nn \int_set:Nn { cn }
+% \cs_generate_variant:Nn \i
+\cs_new:Npn \new_counter:n #1 {
+  \int_new:c { c@#1 }
+  \int_set:cn { c@#1 } { 0 }
+  \cs_new:cpn { the#1 } { \int_use:c { c@#1 } }
+}
+\NewDocumentCommand{\NewCounter}{ m }{
+  \new_counter:n { #1 }
+}
+
+\cs_new:Npn \set_counter:nn #1#2 {
+  \int_set:cn { c@#1 } { #2 }
+}
+\NewDocumentCommand{\SetCounter}{ m m }{
+  \set_counter:nn { #1 } { #2 }
+}
+
+\cs_new:Npn \add_to_counter:nn #1#2 {
+  \int_set:cn { c@#1 } {
+    \int_use:c { c@#1 } + #2
+  }
+}
+\NewDocumentCommand{\AddToCounter}{ m m }{
+  \add_to_counter:nn { #1 } { #2 }
+}
+\NewDocumentCommand{\StepCounter}{ m }{
+  \AddToCounter { #1 } { 1 }
+}
+
+\NewDocumentCommand{\The}{ m }{
+  \int_use:c { c@#1 }
+}
+\ExplSyntaxOff
+
+
+\NewCounter{listlevel}
+
+\RequirePackage{environ}
+\RequirePackage{trimspaces}
+\let\xa=\expandafter
+\def\gathereditem#1{\csname getitems@item@#1\endcsname}
+\NewCounter{\listlevel numgathereditems}
+\long\def\gatheritems#1{%
+  \SetCounter{getitems@begindepth}{0}%
+  \SetCounter{\listlevel numgathereditems}{0}%
+  \xa\long\xa\gdef\csname getitems@item@0\endcsname{}%
+  \gatheritems@int\getitems@relax#1\item\getitems@terminalitem\getitems@endgatheritems
+  \xa\let\xa\gatheredheader\xa=\csname getitems@item@0\endcsname
+}
+\def\@getitems@terminalitem{\getitems@terminalitem}%
+\def\@dummy@relax{\getitems@relax}%
+\long\def\gatheritems@int#1\item#2\getitems@endgatheritems{%
+  \getitems@trackbegindepth{#1}%
+  \ifnum\c@getitems@begindepth=0\relax
+    \def\getitems@test@i{#1}%
+    \ifx\getitems@test@i\@dummy@relax
+      \relax
+    \else
+      \xa\xa\xa\g@addto@macro
+         \xa\xa\csname getitems@item@\The{\listlevel numgathereditems}\endcsname
+            \xa{\getitems@stripfirsttokenfrom#1\getitems@endstrip}%
+    \fi
+    \def\getitems@test@ii{#2}%
+    \ifx\getitems@test@ii\@getitems@terminalitem
+      \let\getitems@next=\relax
+    \else
+      \StepCounter{\listlevel numgathereditems}%
+      \xa\gdef\csname getitems@item@\The{\listlevel numgathereditems}\endcsname{}%
+      \def\getitems@next{\gatheritems@int\getitems@relax#2\getitems@endgatheritems}%
+    \fi
+  \else
+    \xa\xa\xa\g@addto@macro
+       \xa\xa\csname getitems@item@\The{\listlevel numgathereditems}\endcsname
+          \xa{\getitems@stripfirsttokenfrom#1\getitems@endstrip}%
+    \xa\g@addto@macro\csname getitems@item@\The{\listlevel numgathereditems}\endcsname{\item}%
+    \def\getitems@next{\gatheritems@int\getitems@relax#2\getitems@endgatheritems}%
+  \fi
+  \getitems@next
+}
+\long\def\getitems@stripfirsttokenfrom#1#2\getitems@endstrip{#2}
+\NewCounter{getitems@begindepth}
+\long\def\getitems@trackbegindepth#1{%
+  \getitems@trackbegindepth@int#1\getitems@terminalbegindepth\getitems@endtrackbegindepth
+}
+\def\@getitems@begin{\begin}%
+\def\@getitems@end{\end}%
+\def\@getitems@terminalbegindepth{\getitems@terminalbegindepth}%
+\long\def\getitems@trackbegindepth@int#1#2\getitems@endtrackbegindepth{%
+  \def\getitems@test@i{#1}%
+  \ifx\getitems@test@i\@getitems@begin
+    \advance\c@getitems@begindepth by 1\relax
+  \else
+    \ifx\getitems@test@i\@getitems@end
+      \advance\c@getitems@begindepth by -1\relax
+    \fi
+  \fi
+  \def\getitems@test@ii{#2}%
+  \trim@spaces@in\getitems@test@ii
+  \ifx\getitems@test@ii\@getitems@terminalbegindepth
+    \let\getitems@trackbegindepth@next=\relax
+  \else
+    \def\getitems@trackbegindepth@next{%
+      \getitems@trackbegindepth@int#2\getitems@endtrackbegindepth}%
+  \fi
+  \getitems@trackbegindepth@next
+}
+\newif\ifgatherbeginningofloop
+\NewCounter{currentitemnumber}
+\def\loopthroughitemswithcommand#1{%
+  \SetCounter{currentitemnumber}{1}%
+  \gatherbeginningoflooptrue
+  \loopthroughitemswithcommand@int{#1}%
+}
+
+\def\loopthroughitemswithcommand@int#1{%
+  \edef\l@level{\The{\listlevel numgathereditems}}
+  \ifnum\c@currentitemnumber>\l@level\relax
+    \let\getitems@loop@next=\relax%
+  \else
+    \xa\xa\xa#1\xa\xa\xa{\csname getitems@item@\the\c@currentitemnumber\endcsname}%
+    \def\getitems@loop@next{\loopthroughitemswithcommand@int{#1}}%
+    \StepCounter{currentitemnumber}%
+  \fi
+  \gatherbeginningofloopfalse
+  \getitems@loop@next
+}
+\endinput
+%%
+%% End of file `getitems.sty'.
+
+
+
+% \ExplSyntaxOn
+% \cs_generate_variant:Nn \int_set:Nn { cn }
+% % \cs_generate_variant:Nn \i
+% \cs_new:Npn \new_counter:n #1 {
+%   \int_new:c { c@#1 }
+%   \int_set:cn { c@#1 } { 0 }
+%   \cs_new:cpn { the#1 } { \int_use:c { c@#1 } }
+% }
+% \NewDocumentCommand{\NewCounter}{ m }{
+%   \new_counter:n { #1 }
+% }
+%
+% \cs_new:Npn \set_counter:nn #1#2 {
+%   \int_set:cn { c@#1 } { #2 }
+% }
+% \NewDocumentCommand{\SetCounter}{ m m }{
+%   \set_counter:nn { #1 } { #2 }
+% }
+%
+% \cs_new:Npn \add_to_counter:nn #1#2 {
+%   \int_set:cn { c@#1 } {
+%     \int_use:c { c@#1 } + #2
+%   }
+% }
+% \NewDocumentCommand{\AddToCounter}{ m m }{
+%   \add_to_counter:nn { #1 } { #2 }
+% }
+% \NewDocumentCommand{\StepCounter}{ m }{
+%   \AddToCounter { #1 } { 1 }
+% }
+%
+% \NewDocumentCommand{\The}{ m }{
+%   \int_use:c { c@#1 }
+% }
+% \ExplSyntaxOff

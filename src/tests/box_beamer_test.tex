@@ -7,13 +7,13 @@
 \usepackage[utf8]{inputenc}
 \usepackage[brazilian]{babel}
 
-\usetheme{Monjolinho}
+% \usetheme{Monjolinho}
 
 \title{Title}
 \subtitle{Subtitle}
 \author{Author}
 
-\usepackage[beamer]{boxing}
+\usepackage{boxing}
 
 \usepackage[sfdefault]{FiraSans} %% option 'sfdefault' activates Fira Sans as the default text font
 \usepackage[T1]{fontenc}
@@ -28,17 +28,17 @@
     \hrulefill
     \bigskip
     \small
-    \begin{mybox}[columns = auto, equal height = all]
+    \begin{mybox}[columns = 3, equal height = rows, palette = Two]
         \item % [multimedia-41/png-512/music-tune-512x512-1214508]
         \textbf{Algoritmos}\newline
-        Especificação clara e precisa de uma solução
-        % \item %<2->[brand-logos-1/png-128/android-128x128-1306061]
-        % Define several commands for \LaTeX
-        % % \begin{itemize}
-        % %     \item Um
-        % %     \item Dois
-        % % \end{itemize}
-        % \item \textbf{Blender.}\newline Editor document. The calculator package introduces
+        Especificação de uma solução
+        \item %<2->[brand-logos-1/png-128/android-128x128-1306061]
+        Define several commands for \LaTeX
+        % \begin{itemize}
+        %     \item Um
+        %     \item Dois
+        % \end{itemize}
+        \item \textbf{Blender.}\newline Editor document. The calculator package introduces
         \item Several new instructions
         \item \textbf{Ci}\textit{nco}!
         \item other
@@ -52,9 +52,9 @@
 \end{frame}
 
 \begin{frame}
-    \begin{mybox}[continued, columns = auto]
+    \begin{mybox}[continued, columns = 3, palette = Two]
         \item More
-        \item and more
+        \item <2> and more
         \item More
         \item and more
     \end{mybox}

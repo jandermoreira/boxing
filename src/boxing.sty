@@ -1,36 +1,39 @@
 %! Package = boxing
-%! Author = jander
+%! Author = Jander Moreira
 %! Date = 26/10/2022
 
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesPackage{boxing}[2022/10/26 Text boxes for presentations]
+\ProvidesPackage{boxing}[2022/10/26 Colorful text boxes and items made easy]
 
-% Package options
-\newif\ifUseBeamer
-\UseBeamerfalse
-\DeclareOption{beamer}{
-    \UseBeamertrue
+% Check for beamer class
+\newif\ifboxing@UseBeamer
+\@ifclassloaded{beamer}{
+    \boxing@UseBeamertrue
+}{
+    \boxing@UseBeamerfalse
+    \NewDocumentCommand{\visible}{ d<> m }{#2}  % \visible is a fake command 
 }
-\ProcessOptions
 
-% Keys
-\RequirePackage{pgfkeys}
+% Packages
+\RequirePackage{getitems}
 
+\RequirePackage{tikz}
+\usetikzlibrary{calc}
+
+\RequirePackage{tcolorbox}
+\tcbuselibrary{raster, skins}
+\usetikzlibrary{overlay-beamer-styles}
+
+
+% Default modules
+\input{utils.code}
 \input{palette.code}
+\input{boxes.code}
 
 
-\NewPalette{main}
-% \SetPalette{main}{dGamboge, dDarkJungleGreen, dHunterGreen, dRussianViolet, dCaputMortuum}
-\SetPalette{main}{red, green, blue, orange}
-% \SetPalette{main}{itemize/enumerate body.fg}
-
-\NewPalette{second level}
-% \SetPalette{second level}{dHunterGreen, dGamboge}
-\SetPalette{second level}{brown, black, yellow}
-% \SetPalette{second level}{itemize/enumerate subbody.fg}
-
-
-% Modules
-
-\input{boxes.code.tex}
-
+% % Optional modules
+% \DeclareOption{enumerate}{
+%     \PackageWarning{boxing}{Loading 'list.code'}
+    \input{list.code}
+% }
+% \ProcessOptions

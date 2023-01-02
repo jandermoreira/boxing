@@ -1,42 +1,12 @@
 % boxes.code
+%! suppress = GatherEquations
 
 % Variables
 \NewDocumentCommand{\boxing@Colums}{}{}
 \NewDocumentCommand{\boxing@EqualHeight}{}{}
+\NewDocumentCommand{\boxing@Palette}{}{}%
 \newif\ifboxing@Continued
 
-\ExplSyntaxOn
-\NewDocumentCommand{\RenewFullyExpandedDocumentCommand} { m m }{
-    \exp_args:NNnV \RenewDocumentCommand #1 { } { #2 }
-}
-\ExplSyntaxOff
-
-%! formatter = off
-\pgfkeys{
-    % /boxing/.is family,
-    /boxing/.cd,
-    % number of columns
-    columns/.is choice,
-    columns/auto/.code = {%
-        \RenewDocumentCommand{\boxing@Colums}{}{\thenumgathereditems}%
-    },
-    columns/.unknown/.code = {%
-        \RenewFullyExpandedDocumentCommand{\boxing@Colums}{\pgfkeyscurrentname}%
-    },
-    equal height/.is choice,
-    equal height/none/.code = {%
-        \RenewDocumentCommand{\boxing@EqualHeight}{}{none}%
-    },
-    equal height/rows/.code = {%
-        \RenewDocumentCommand{\boxing@EqualHeight}{}{rows}%
-    },
-    equal height/all/.code = {%
-        \RenewDocumentCommand{\boxing@EqualHeight}{}{all}%
-    },
-    % continue numbering?
-    continued/.is if = boxing@Continued,
-}
-%! formatter = on
 
 \NewDocumentCommand{\boxingset}{ >{\TrimSpaces} m }{%
     \pgfkeys{
@@ -50,6 +20,7 @@
     columns = auto,
     equal height = all,
     continued = false,
+    palette = Toasted Peach,
 }
 
 
@@ -76,30 +47,30 @@
 
 \NewDocumentCommand{\BoxBody}{}{}
 \NewDocumentCommand{\HBox}{m}{%
-    \UsePalette{palette_i}%
+    \UsePalette{\boxing@Palette}%
     \RenewDocumentCommand{\BoxBody}{}{\trim@spaces{#1}}%
     \begingroup%
-    \ifUseBeamer%
-    \setbeamerfont{itemize/enumerate body}{size = \footnotesize}%
-    \setbeamercolor{itemize/enumerate body}{fg = \CurrentFGColor}%
-    \setbeamercolor{structure}{fg = \CurrentFGColor}%
+    %! formatter = off
+    \ifboxing@UseBeamer%
+        \setbeamerfont{itemize/enumerate body}{size = \footnotesize}%
+        \setbeamercolor{itemize/enumerate body}{fg = \CurrentFGColor}%
+        \setbeamercolor{structure}{fg = \CurrentFGColor}%
     \fi%
+    %! formatter = on
     \begin{tikzpicture}[picture box]
         \node[every text node] (text) {\raggedright\BoxBody\strut};
     \end{tikzpicture}%
     \endgroup%
-    \StepPalette{palette_i}%
+    \StepPalette{\boxing@Palette}%
     \ifnum\thecurrentitemnumber=\thenumgathereditems\else%
     \hfill%
     \fi%
 }
 
 % Environments
-\RequirePackage{getitems}
-
 \NewEnviron{horizontalbox}[1][]{%
     \expandafter\gatheritems\expandafter{\BODY}%
-    \ResetPalette{palette_i}%
+    \ResetPalette{\boxing@Palette}%
     \setlength{\BoxWidth}{
         \dimexpr \textwidth/\thenumgathereditems - 1.5em -
         \BoxHSpacing
@@ -112,9 +83,6 @@
 \RequirePackage{tcolorbox}
 \newif\ifUseIcon
 \UseIconfalse
-\tcbuselibrary{raster, skins}
-\usetikzlibrary{calc}
-\usetikzlibrary{overlay-beamer-styles}
 \NewDocumentCommand{\TCBBox}{ m m +m }{%
     \visible<#1>{%
         \begin{tcolorbox}[
@@ -157,7 +125,7 @@
 % \ExplSyntaxOff
 
 \NewDocumentCommand{\TCB}{ +m }{%
-    \UsePalette{Colored Coolers}%
+    \UsePalette{\boxing@Palette}%
     \ProcessItemArguments{\l@overlay}{\l@option}{\l@text}{#1}%
     %! formatter = off
     \ifx\l@overlay\empty%
@@ -169,14 +137,14 @@
     \else
         \UseIcontrue%
     \fi%
-    \ifUseBeamer%
+    \ifboxing@UseBeamer%
         \setbeamerfont{itemize/enumerate body}{size = \footnotesize}%
         \setbeamercolor{itemize/enumerate body}{fg = \CurrentFGColor}%
         \setbeamercolor{structure}{fg = \CurrentFGColor}%
     \fi%
     %! formatter = on
     \TCBBox{\l@overlay}{\l@option}{\l@text}%
-    \StepPalette{Colored Coolers}%
+    \StepPalette{\boxing@Palette}%
     \stepcounter{CurrentItemNumber}%
 }
 
@@ -200,7 +168,7 @@
         raster halign = center,
         raster right skip = \dimexpr 1em * \kvtcb@raster@columns \relax,
         nobeforeafter,
-        raster column skip = 0em,
+        raster column skip = 0.5em,
         /utils/exec = {%
         \pgfkeysalsofrom{/tcb/raster equal height = \boxing@EqualHeight}%
         },
@@ -210,47 +178,5 @@
     \end{tcbraster}%
     \endgroup%
 }
-
-\ExplSyntaxOn
-\cs_new:Npn \gather_beamer_item_options:NNNn #1#2#3#4 {
-    \tl_clear_new:N \g_item_overlay_spec_tl
-    \tl_clear_new:N \g_item_option_spec_tl
-    \tl_clear_new:N \g_item_text_tl
-    \regex_extract_once:nnNTF { \A<(.*?)>\s*\[(.*?)\](.*) } { #4 } \g_item_structure_seq { % <> and []
-        \tl_set:Nn \g_item_overlay_spec_tl { \seq_item:Nn \g_item_structure_seq { 2 } }
-        \tl_set:Nn \g_item_option_spec_tl { \seq_item:Nn \g_item_structure_seq { 3 } }
-        \tl_set:Nn \g_item_text_tl { \seq_item:Nn \g_item_structure_seq { 4 } }
-    } { % [] and <>
-        \regex_extract_once:nnNTF { \A\[(.*?)\]\s*<(.*?)>(.*) } { #4 } \g_item_structure_seq {
-            \tl_gset:Nn \g_item_overlay_spec_tl { \seq_item:Nn \g_item_structure_seq { 3 } }
-            \tl_gset:Nn \g_item_option_spec_tl { \seq_item:Nn \g_item_structure_seq { 2 } }
-            \tl_gset:Nn \g_item_text_tl { \seq_item:Nn \g_item_structure_seq { 4 } }
-        } { % only <>
-            \regex_extract_once:nnNTF { \A<(.*?)>(.*) } { #4 } \g_item_structure_seq {
-                \tl_gset:Nn \g_item_overlay_spec_tl { \seq_item:Nn \g_item_structure_seq { 2 } }
-                % \tl_gset:Nn \g_item_option_spec_tl { \empty }
-                \tl_gset:Nn \g_item_text_tl { \seq_item:Nn \g_item_structure_seq { 3 } }
-            } { % only []
-                \regex_extract_once:nnNTF { \A\[(.*?)\](.*) } { #4 } \g_item_structure_seq {
-                % \tl_gset:Nn \g_item_overlay_spec_tl { \empty }
-                    \tl_gset:Nn \g_item_option_spec_tl { \seq_item:Nn \g_item_structure_seq { 2 } }
-                    \tl_gset:Nn \g_item_text_tl { \seq_item:Nn \g_item_structure_seq { 3 } }
-                } { % only text
-                % \tl_gset:Nn \g_item_overlay_spec_tl { \empty }
-                % \tl_gset:Nn \g_item_option_spec_tl { \empty }
-                    \tl_gset:Nn \g_item_text_tl { #4 }
-                }
-            }
-        }
-    }
-    \exp_args:NNx \tl_set:Nn #1 { \g_item_overlay_spec_tl }
-    \exp_args:NNV \tl_set:Nn #2 { \g_item_option_spec_tl }
-    \exp_args:NNV \tl_set:Nn #3 { \g_item_text_tl }
-}
-
-\NewDocumentCommand{\ProcessItemArguments}{ m m m +m }{
-    \gather_beamer_item_options:NNNn { #1 } { #2 } { #3 } { #4 }
-}
-\ExplSyntaxOff
 
 \endinput

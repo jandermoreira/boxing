@@ -1,0 +1,38 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%! Autor = Jander Moreira
+%! Data = 08/10/2022
+
+\documentclass[10pt]{article}
+\usepackage{boxing}
+\usepackage{titling}
+\setlength{\droptitle}{-3cm}
+\usepackage{multicol}
+\usepackage{datetime}
+
+\title{Palettes}
+\author{Jander Moreira}
+\date{\monthname, \the\year}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{document}
+\maketitle
+
+\begin{multicols}{2}
+    \raggedcolumns
+    \LoopPaletteList{%
+        \noindent
+        \begin{tcolorbox}[title = \CurrentPalette, fonttitle = \sffamily\bfseries]
+            \begin{center}
+                \LoopPalette{\CurrentPalette}{%
+                    \noindent%
+                    \tikz \node[fill = \CurrentBGColor, text = \CurrentFGColor, font = \bfseries\sffamily, text width = 0.9\linewidth, text height = 1em] {\CurrentColor};
+                    \par
+                }
+            \end{center}
+        \end{tcolorbox}
+        \par
+    }
+\end{multicols}
+
+\end{document}
+
