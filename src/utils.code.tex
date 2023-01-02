@@ -1,0 +1,129 @@
+%! Autor = Jander Moreira
+%! Data = 02/01/2023
+
+%! suppress = GatherEquations
+
+% utils.code
+
+\ExplSyntaxOn
+\NewDocumentCommand{\RenewFullyExpandedDocumentCommand} { m m }{
+    \exp_args:NNnV \RenewDocumentCommand #1 { } { #2 }
+}
+\ExplSyntaxOff
+
+%! formatter = off
+\pgfkeys{
+% /boxing/.is family,
+    /boxing/.cd,
+% number of columns
+    columns/.is choice,
+    columns/auto/.code = {%
+        \RenewDocumentCommand{\boxing@Colums}{}{\thenumgathereditems}%
+    },
+    columns/.unknown/.code = {%
+        \RenewFullyExpandedDocumentCommand{\boxing@Colums}{\pgfkeyscurrentname}%
+    },
+    equal height/.is choice,
+    equal height/none/.code = {%
+        \RenewDocumentCommand{\boxing@EqualHeight}{}{none}%
+    },
+    equal height/rows/.code = {%
+        \RenewDocumentCommand{\boxing@EqualHeight}{}{rows}%
+    },
+    equal height/all/.code = {%
+        \RenewDocumentCommand{\boxing@EqualHeight}{}{all}%
+    },
+% continue numbering?
+    continued/.is if = boxing@Continued,
+% palette
+    palette/.code = {
+        \RenewDocumentCommand{\boxing@Palette}{}{#1}%
+    },
+}
+%! formatter = on
+
+
+% ProcessItemArguments: check if for \item optional arguments (<> for beamer
+% overlays and [] to replace default bullet)
+% #1: a macro to store overlay specifications -- <>
+% #2: a macro to store option options specifications -- []
+% #3: a macro to store the body only tokens
+% #4: the full contents of the item
+\ExplSyntaxOn
+\cs_new:Npn \gather_beamer_item_options:NNNn #1#2#3#4 {
+    % Clear all output macros
+    \tl_clear_new:N #1
+    \tl_clear_new:N #2
+    \tl_clear_new:N #3
+
+    % Check for overlay and options
+    \regex_extract_once:nnNTF { \A<(.*?)>\s*\[(.*?)\](.*) } { #4 } \g_item_structure_seq { % <> and []
+        \tl_set:Nn #1 { \seq_item:Nn \g_item_structure_seq { 2 } }
+        \tl_set:Nn #2 { \seq_item:Nn \g_item_structure_seq { 3 } }
+        \tl_set:Nn #3 { \seq_item:Nn \g_item_structure_seq { 4 } }
+    } {
+        \regex_extract_once:nnNTF { \A\[(.*?)\]\s*<(.*?)>(.*) } { #4 } \g_item_structure_seq { % [] and <>
+            \tl_gset:Nn #1 { \seq_item:Nn \g_item_structure_seq { 3 } }
+            \tl_gset:Nn #2 { \seq_item:Nn \g_item_structure_seq { 2 } }
+            \tl_gset:Nn #3 { \seq_item:Nn \g_item_structure_seq { 4 } }
+        } {
+            \regex_extract_once:nnNTF { \A<(.*?)>(.*) } { #4 } \g_item_structure_seq {% only <>
+                \tl_gset:Nn #1 { \seq_item:Nn \g_item_structure_seq { 2 } }
+                \tl_gset:Nn #3 { \seq_item:Nn \g_item_structure_seq { 3 } }
+            } {
+                \regex_extract_once:nnNTF { \A\[(.*?)\](.*) } { #4 } \g_item_structure_seq {
+                % only []
+                    \tl_gset:Nn #2 { \seq_item:Nn \g_item_structure_seq { 2 } }
+                    \tl_gset:Nn #3 { \seq_item:Nn \g_item_structure_seq { 3 } }
+                } { % only text
+                    \tl_gset:Nn #3 { #4 }
+                }
+            }
+        }
+    }
+}
+\NewDocumentCommand{\ProcessItemArguments}{ m m m +m }{
+    \gather_beamer_item_options:NNNn { #1 } { #2 } { #3 } { #4 }
+}
+
+% NewCounter:
+% #1: name
+\cs_new:Npn \new_counter:n #1 {
+    \int_new:c { g_counter_#1_int }
+    \exp_args:Nc \NewDocumentCommand { the#1 } { } { \counter_value:n { #1 } }
+}
+\NewDocumentCommand{\NewCounter}{ m }{
+    \new_counter:n { #1 }
+}
+
+% SetCounter:
+\cs_new:Npn \set_counter:nn #1#2 {
+    \int_set:cn { g_counter_#1_int } { #2 }
+}
+\NewDocumentCommand{\SetCounter}{ m m }{
+    \set_counter:nn { #1 } { #2 }
+}
+
+% AddToCounter:
+\cs_new:Npn \add_to_counter:nn #1#2 {
+    \set_counter:nn { #1 } { \int_use:c { g_counter_#1_int } + #2 }
+}
+\NewDocumentCommand{\AddToCounter}{ m m }{
+    \add_to_counter:nn { #1 } { #2 }
+}
+
+% StepCounter:
+\NewExpandableDocumentCommand{\StepCounter}{ m }{
+    \AddToCounter { #1 } { 1 }
+}
+
+% The:
+\cs_new:Npn \counter_value:n #1 {
+    \int_use:c { g_counter_#1_int }
+}
+\NewDocumentCommand{\The}{ m }{
+    \counter_value:n { #1 }
+}
+\ExplSyntaxOff
+
+\endinput
