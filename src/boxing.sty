@@ -5,6 +5,14 @@
 \NeedsTeXFormat{LaTeX2e}
 \ProvidesPackage{boxing}[2022/10/26 Colorful text boxes and items made easy]
 
+% Options
+\newif\ifboxing@ModuleEnumItem
+\boxing@ModuleEnumItemfalse
+\DeclareOption{enumitem}{
+    \boxing@ModuleEnumItemtrue
+}
+\ProcessOptions
+
 % Check for beamer class
 \newif\ifboxing@UseBeamer
 \@ifclassloaded{beamer}{
@@ -30,10 +38,10 @@
 \input{palette.code}
 \input{boxes.code}
 
-
-% % Optional modules
-% \DeclareOption{enumerate}{
-%     \PackageWarning{boxing}{Loading 'list.code'}
+% Optional module
+%! formatter = off
+\ifboxing@ModuleEnumItem
+    \PackageWarning{boxing}{Loading 'list.code'}
     \input{list.code}
-% }
-% \ProcessOptions
+\fi
+%! formatter = on
