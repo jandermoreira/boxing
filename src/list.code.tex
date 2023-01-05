@@ -3,7 +3,7 @@
 
 %! suppress = MultipleIncludes
 
-\NewCommandCopy\boxing@OriginalItem\item
+\let\boxing@OriginalItem\item
 
 \newif\ifboxing@UseEnumItem
 \@ifpackageloaded{enumitem}{
@@ -16,29 +16,65 @@
 \NewCounter{boxing@Level1Counter}
 \NewCounter{boxing@Level2Counter}
 
+% \NewDocumentCommand{\boxing@ExecuteBeamerItem}{ m }{%
+%     \boxing@OriginalItem {\color{\CurrentBGColor}#3}%
+% }
+\NewDocumentCommand{\boxing@BeamerItem}{ m m +m }{%
+    %! formatter = off
+    \edef\l@overlayarg{#1}%
+    \ifx\l@overlayarg\empty%
+        \def\l@overlayarg{1-}%
+    \else
+        \def\l@overlayarg{#1}%
+    \fi%
+    \edef\l@optionarg{#2}%
+    \boxing@OriginalItem{\color{\CurrentBGColor}#3}
+    % \visible<\l@overlayarg>{
+    %     \ifx\l@optionarg\empty%
+    %         \boxing@OriginalItem{\color{\CurrentBGColor}#3}%
+    %     \else
+    %         \boxing@OriginalItem[\l@optionarg]{\color{\CurrentBGColor}#3}%
+    %     \fi
+    % }
+    %! formatter = on
+}
+
+\NewDocumentCommand{\boxing@NonBeamerItem}{ m +m }{%
+    %! formatter = off
+    \def\l@optionarg{#1}%
+    \ifx\l@optionarg\empty%
+        \boxing@OriginalItem{\color{\CurrentBGColor}#2}%
+    \else%
+        \boxing@OriginalItem[#1]{\color{\CurrentBGColor}#2}%
+    \fi%
+    %! formatter = on
+}
+
 \NewDocumentCommand{\EnumerateItem}{ +m }{%
     \UsePalette{\boxing@Palette}%
     \StepPalette{\boxing@Palette}%
     \ProcessItemArguments{\l@overlay}{\l@option}{\l@text}{#1}%
+    %
     %! formatter = off
-    \ifx\l@option\empty
-        \boxing@OriginalItem{\color{\CurrentBGColor}\l@text}%
+    \ifboxing@UseBeamer
+        \boxing@BeamerItem{\l@overlay}{\l@option}{\l@text}
     \else
-        \boxing@OriginalItem[\l@option]{\color{\CurrentBGColor}\l@text}%
-    \fi%
+        \boxing@NonBeamerItem{\l@option}{\l@text}
+    \fi
     %! formatter = on
+    %
     \StepCounter{boxing@Level\theboxing@ItemLevel Counter}%
 }
-
 \NewDocumentCommand{\boxing@SetEnumerate}{ }{
-\let\boxing@OriginalEnumerate\enumerate
-\let\endboxing@OriginalEnumerate\endenumerate
-\RenewDocumentEnvironment{enumerate}{ O{} D<>{} +b }{
-    \begin{boxingitems}{boxing@OriginalEnumerate}[##1]<##2>
-        ##3
-            }{
-    \end{boxingitems}
-}
+    \let\boxing@OriginalEnumerate\enumerate
+    \let\endboxing@OriginalEnumerate\endenumerate
+    \RenewDocumentEnvironment{enumerate}{ O{} D<>{} +b }{
+        \begin{boxingitems}{boxing@OriginalEnumerate}[##1]%
+            <##2>
+            ##3
+                }{
+        \end{boxingitems}
+    }
 }
 %! formatter = off
 \ifboxing@UseEnumerate
@@ -56,58 +92,54 @@
 \NewDocumentCommand{\l@environmentoptions}{}{}
 \NewDocumentEnvironment{boxingitems}{ m O{} D<>{} +b }{%
     \begingroup%
+    \ResetPallette{\boxing@Palette}
     \StepCounter{boxing@ItemLevel}%
     \gatheritems{#4}%
     \boxingset{#3}%
-    % \IsEmpty{#2}{%
-    %     \boxing@UseOptionalArgumentsfalse%
-    % }{%
-    %     \boxing@UseOptionalArgumentstrue%
-    % }%
-    \RenewDocumentCommand{\boxing@BeginEnvironment}{}{%
-        \csname #1\endcsname%
-    }%
-    \RenewDocumentCommand{\boxing@EndEnvironment}{}{%
-        \csname end#1\endcsname%
-    }%
-    %
+    \expandafter\let\expandafter\boxing@BeginEnvironment\csname #1\endcsname%
+    \expandafter\let\expandafter\boxing@EndEnvironment\csname end#1\endcsname%
+%
     \IsEmpty{#2}{%
-        \boxing@OriginalEnumerate[#2]%
+        \boxing@BeginEnvironment%
     }{%
-        \boxing@OriginalEnumerate%
+        \boxing@BeginEnvironment[#2]%
     }%
     \loopthroughitemswithcommand{\EnumerateItem}%
-    \endboxing@OriginalEnumerate%
+    \boxing@EndEnvironment%
     \AddToCounter{boxing@ItemLevel}{-1}
     \endgroup%
     }{%
 }
 
-\ExplSyntaxOn
-\cs_generate_variant:Nn \seq_clear_new:N { c }
+\newcommand\jander[1]{\item (#1)\par}
 
-\cs_new:Npn \int_clear_new:N #1 {
-    \int_if_exist:NTF #1 { } {
-        \int_new:N #1
-    }
-}
-\cs_generate_variant:Nn \int_clear_new:N { c }
+\ExplSyntaxOn
+% todo: delete line below?
+% \cs_generate_variant:Nn \seq_clear_new:N { c }
 
 \cs_new:Npn \execute_list_of_items:nn #1#2 {
-    \int_clear_new:N \l_number_gathered_items_int
+    \int_zero_new:N \l_number_gathered_items_int
     \int_set:Nn \l_number_gathered_items_int { \thenumgathereditems }
 
+    % Put all items in a list (getitems won't work for nested environments)
+    \seq_clear_new:c { l_item_list_level_#1_seq }
     \tl_clear_new:N \l_item_body_tl
-    \int_clear_new:N \l_current_item_int
+    \int_zero_new:N \l_current_item_int
     \tl_clear_new:N \l_argument_tl
     \int_set:Nn \l_current_item_int { 1 }
     \int_while_do:nn { \l_current_item_int <= \l_number_gathered_items_int } {
         \exp_args:NNc \tl_set:No \l_item_body_tl { getitems@item@\int_use:N \l_current_item_int }
         \tl_set:No \l_argument_tl { \l_item_body_tl }
-        \exp_args:No #2 { \l_argument_tl }
+        % \tl_show:N \l_item_body_tl
+        \seq_put_right:cV { l_item_list_level_#1_seq } \l_argument_tl
         \int_set:Nn \l_current_item_int { \l_current_item_int + 1 }
     }
-    \seq_clear:c { g_item_list_level_#1_seq }
+
+    % Process list
+    \seq_map_inline:cn { l_item_list_level_#1_seq } {
+        #2 { ##1 }
+    }
+    \seq_clear:c { l_item_list_level_#1_seq }
 }
 \NewExpandableDocumentCommand{\ExecuteListOfItems}{ m m }{
     \execute_list_of_items:nn { #1 } { #2 }
