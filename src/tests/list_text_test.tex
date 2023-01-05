@@ -7,19 +7,19 @@
 \usepackage{multicol}
 \usepackage{datetime}
 
-\title{EnumItem}
+\title{Lists}
 \author{Jander Moreira}
 \date{\monthname, \the\year}
 
-% \usepackage{enumitem}
 \usepackage{enumitem}
 \usepackage[enumerate]{boxing}
 
 \begin{document}
-    % \maketitle
+\maketitle
 
 List:
-\begin{enumerate}[((1))]<palette = Midnight Waters>
+\begin{enumerate}
+    [label = {\Roman*)}]%<palette = Midnight Waters>
     \item First \textbf{item}
     \fbox{teste}
     \item Other item $y = x^2$
@@ -30,19 +30,18 @@ List:
     \begin{equation}
         E = mc^2\label{eq:equation}
     \end{equation}
+    \item And maybe more
+    \item [$\triangle$]And more
+    \item And more
+    \item And more
     \begin{enumerate}
         \item Um
         \item <3>Dois
         \item Três
     \end{enumerate}
-    \item And maybe more
-    \item [$\triangle$]And more
-    \item And more
-    \item And more
-    \item And more
-    \item And more
+    \item 3
+    \item 2\ldots
     \item And the \textit{last}
 \end{enumerate}
-
 
 \end{document}
