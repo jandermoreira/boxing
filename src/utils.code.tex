@@ -124,6 +124,42 @@
 \NewDocumentCommand{\The}{ m }{
     \counter_value:n { #1 }
 }
-\ExplSyntaxOff
 
+% Empty:
+\NewDocumentCommand{\IsEmpty}{ m +m +m }{
+    \tl_clear_new:N \l_contents_tl
+    \tl_set:Nn \l_contents_tl { #1 }
+    \tl_if_empty:NTF \l_contents_tl { #2 } { #3 }
+}
+
+% CheckIfPackageLoaded:
+\cs_new:Npn \check_if_loaded:n #1 {
+    \bool_new:c { #1_was_loaded_bool }
+    \use:c { @ifpackageloaded } { #1 } {
+        \bool_set_true:c { #1_was_loaded_bool }
+    }{
+        \bool_set_false:c { #1_was_loaded_bool }
+    }
+}
+\NewDocumentCommand{\CheckIfPackageAlreadyLoaded}{ m }{
+    \check_if_loaded:n { #1 }
+}
+
+% IfPackageAfter:
+\bool_new:N \_if_package_was_loaded_bool
+\cs_new:Npn \check_if_loaded_after:n #1 {
+    \bool_set_eq:Nc \_if_package_was_loaded_bool { #1_was_loaded_bool }
+    \use:c { @ifpackageloaded } { #1 } {
+        \bool_if:nTF { \_if_package_was_loaded_bool } { } {
+            \msg_new:nnn { boxing } { package-crash } {
+                Package~'#1'~must~be~loaded~before~'boxing'.
+            }
+            \msg_fatal:nn { boxing } { package-crash }
+        }
+    } { }
+}
+\NewDocumentCommand{\ErrorIfPackageLoadedAfter}{ m }{
+    \check_if_loaded_after:n { #1 }
+}
+\ExplSyntaxOff
 \endinput
