@@ -5,15 +5,26 @@
 \NeedsTeXFormat{LaTeX2e}
 \ProvidesPackage{boxing}[2022/10/26 Colorful text boxes and items made easy]
 
-% Options
-\newif\ifboxing@ModuleEnumItem
-\boxing@ModuleEnumItemfalse
-\DeclareOption{enumitem}{
-    \boxing@ModuleEnumItemtrue
-}
-\ProcessOptions
+% Variables
+\newif\ifboxing@ModuleList
+\newif\ifboxing@UseEnumerate
+\newif\ifboxing@UseItemize
 
-% Check for beamer class
+% Options
+\RequirePackage{pgfopts}
+
+\pgfkeys{
+    /boxing/.cd,
+    enumerate/.is if = boxing@UseEnumerate,
+    itemize/.is if = boxing@UseItemize,
+    list/.is if = boxing@ModuleList,
+}
+
+\ProcessPgfOptions{/boxing}
+
+% Beamer: some parts of the code are aware to use some Beamer resources,
+% such as templates, colors and fonts. The command \visible is used to
+% handle overlays in frames.
 \newif\ifboxing@UseBeamer
 \@ifclassloaded{beamer}{
     \boxing@UseBeamertrue
@@ -32,7 +43,6 @@
 \tcbuselibrary{raster, skins}
 \usetikzlibrary{overlay-beamer-styles}
 
-
 % Default modules
 \input{utils.code}
 \input{palette.code}
@@ -40,8 +50,24 @@
 
 % Optional module
 %! formatter = off
-\ifboxing@ModuleEnumItem
-    \PackageWarning{boxing}{Loading 'list.code'}
+\ifboxing@UseEnumerate
+    \boxing@ModuleListtrue
+\fi
+\ifboxing@UseItemize
+    \boxing@ModuleListtrue
+\fi
+\ifboxing@ModuleList
+    % \PackageWarning{boxing}{Loading 'list.code'}
     \input{list.code}
 \fi
 %! formatter = on
+
+% Important stuff
+\CheckIfPackageAlreadyLoaded{enumitem}
+\CheckIfPackageAlreadyLoaded{enumerate}
+\CheckIfPackageAlreadyLoaded{paralist}
+\AtBeginDocument{
+    \ErrorIfPackageLoadedAfter{enumitem}
+    \ErrorIfPackageLoadedAfter{enumerate}
+    \ErrorIfPackageLoadedAfter{paralist}
+}
