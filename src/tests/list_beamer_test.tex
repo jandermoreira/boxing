@@ -12,7 +12,8 @@
 \title{Lists}
 \author{Jander Moreira}
 
-\usepackage[enumerate]{boxing}
+\usepackage[]{boxing}
+\boxingset{palette = rgb}
 
 \begin{document}
 \maketitle
@@ -21,7 +22,7 @@
 \begin{frame}
     List:
 
-    \begin{enumerate}[<only@+->]
+    \begin{enumerate}[<+->]
         \item This
         \item is
         \begin{enumerate}
@@ -29,7 +30,7 @@
             \item [$\equiv$]list
             \item of
         \end{enumerate}
-        \item items
+        \item <3> items
         \item test
     \end{enumerate}
 \end{frame}

@@ -92,7 +92,7 @@
 \NewDocumentCommand{\l@environmentoptions}{}{}
 \NewDocumentEnvironment{boxingitems}{ m O{} D<>{} +b }{%
     \begingroup%
-    \ResetPallette{\boxing@Palette}
+    \ResetPalette{\boxing@Palette}%
     \StepCounter{boxing@ItemLevel}%
     \gatheritems{#4}%
     \boxingset{#3}%
@@ -114,8 +114,6 @@
 \newcommand\jander[1]{\item (#1)\par}
 
 \ExplSyntaxOn
-% todo: delete line below?
-% \cs_generate_variant:Nn \seq_clear_new:N { c }
 
 \cs_new:Npn \execute_list_of_items:nn #1#2 {
     \int_zero_new:N \l_number_gathered_items_int
