@@ -12,27 +12,36 @@
 \title{Lists}
 \author{Jander Moreira}
 
-\usepackage[]{boxing}
+\usepackage[enumerate]{boxing}
 \boxingset{palette = rgb}
 
 \begin{document}
 \maketitle
 
-
 \begin{frame}
     List:
 
     \begin{enumerate}[<+->]
-        \item This
-        \item is
-        \begin{enumerate}
-            \item a
-            \item [$\equiv$]list
-            \item of
-        \end{enumerate}
-        \item <3> items
-        \item test
+        \item Item simples 1
+        \item [3]Item simples 2
+        % \item[*] Item com rótulo
+        % \item<2>Item só com overlay
+        % \item[*]<2>Item com rótulo e overlay
+        % \item<2>[*]Item com overlay e rótulo
+        % \item Item simples 3
     \end{enumerate}
+
+    % \begin{enumerate}[<+->]
+    %     \item This
+    %     \item is
+    %     \begin{enumerate}
+    %         \item a
+    %         \item [$\equiv$]list
+    %         \item of
+    %     \end{enumerate}
+    %     \item <3> items
+    %     \item test
+    % \end{enumerate}
 \end{frame}
 
 \end{document}

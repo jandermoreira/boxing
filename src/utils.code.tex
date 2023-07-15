@@ -33,6 +33,7 @@
     equal height/all/.code = {%
         \RenewDocumentCommand{\boxing@EqualHeight}{}{all}%
     },
+    row skip/.store in = \boxing@RowSkip,
 % continue numbering?
     continued/.is if = boxing@Continued,
 % palette
@@ -41,6 +42,8 @@
     },
 }
 %! formatter = on
+
+\NewDocumentCommand{\boxing@RowSkip}{}{}
 
 
 % ProcessItemArguments: check if for \item optional arguments (<> for beamer
@@ -67,20 +70,28 @@
             \tl_gset:Nn #2 { \seq_item:Nn \g_item_structure_seq { 2 } }
             \tl_gset:Nn #3 { \seq_item:Nn \g_item_structure_seq { 4 } }
         } {
-            \regex_extract_once:nnNTF { \A<(.*?)>(.*) } { #4 } \g_item_structure_seq {% only <>
+            \regex_extract_once:nnNTF { \A<(.*?)>(.*) } { #4 } \g_item_structure_seq { % only <>
                 \tl_gset:Nn #1 { \seq_item:Nn \g_item_structure_seq { 2 } }
                 \tl_gset:Nn #3 { \seq_item:Nn \g_item_structure_seq { 3 } }
             } {
-                \regex_extract_once:nnNTF { \A\[(.*?)\](.*) } { #4 } \g_item_structure_seq {
-                % only []
+                \regex_extract_once:nnNTF { \A\[(.*?)\](.*) } { #4 } \g_item_structure_seq { % only []
                     \tl_gset:Nn #2 { \seq_item:Nn \g_item_structure_seq { 2 } }
+                    % \tl_clear_new:N \temp
+                    % \tl_set_eq:Nn \temp #2
+                    % \tl_show:N \temp
                     \tl_gset:Nn #3 { \seq_item:Nn \g_item_structure_seq { 3 } }
+                    % \item SOMENTE~[~]\par
+                    % Result (#1, #2, #3) from (#4)
                 } { % only text
                     \tl_gset:Nn #3 { #4 }
+                    % \item SIMPLES
                 }
             }
         }
     }
+    % \tl_show:N #1
+    % \tl_show:N #2
+    % \tl_show:N #3
 }
 \NewDocumentCommand{\ProcessItemArguments}{ m m m +m }{
     \gather_beamer_item_options:NNNn { #1 } { #2 } { #3 } { #4 }
@@ -130,6 +141,11 @@
     \tl_clear_new:N \l_contents_tl
     \tl_set:Nn \l_contents_tl { #1 }
     \tl_if_empty:NTF \l_contents_tl { #2 } { #3 }
+}
+
+% IsEmptyMacro:
+\NewDocumentCommand{\IsEmptyOnce}{ m +m +m }{
+    \exp_args:No \IsEmpty { #1 } { #2 } { #3 }
 }
 
 % CheckIfPackageLoaded:

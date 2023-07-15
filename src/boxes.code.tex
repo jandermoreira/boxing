@@ -19,6 +19,7 @@
 \boxingset{
     columns = auto,
     equal height = all,
+    row skip = 2ex,
     continued = false,
     palette = Toasted Peach,
 }
@@ -52,9 +53,9 @@
     \begingroup%
     %! formatter = off
     \ifboxing@UseBeamer%
-        \setbeamerfont{itemize/enumerate body}{size = \footnotesize}%
-        \setbeamercolor{itemize/enumerate body}{fg = \CurrentFGColor}%
-        \setbeamercolor{structure}{fg = \CurrentFGColor}%
+    \setbeamerfont{itemize/enumerate body}{size = \footnotesize}%
+    \setbeamercolor{itemize/enumerate body}{fg = \CurrentFGColor}%
+    \setbeamercolor{structure}{fg = \CurrentFGColor}%
     \fi%
     %! formatter = on
     \begin{tikzpicture}[picture box]
@@ -83,11 +84,11 @@
 \RequirePackage{tcolorbox}
 \newif\ifUseIcon
 \UseIconfalse
-\NewDocumentCommand{\TCBBox}{ m m +m }{%
+\NewDocumentCommand{\TCBBoxCircle}{ m m +m }{%
     \visible<#1>{%
         \begin{tcolorbox}[
-        left = 0pt,
-        right = 0pt,
+        left = 0.25em,
+        right = 0.25em,
         bottom = 0pt,
         coltext = \CurrentFGColor,
         colback = \CurrentBGColor,
@@ -101,32 +102,50 @@
         enlarge top by = 1em,
         interior style = {
             top color = \CurrentBGColor,
-            bottom color = \CurrentBGColor!60!white,
+            bottom color = \CurrentBGColor!80!white,
         },
         overlay = {
             \coordinate (North West) at ($(frame.north west) + (0.05em, -0.05em)$);
             \path [fill = \CurrentBGColor!90!black] (North West) circle (1em);
             \path [thick, draw = \CurrentBGColor!30!white] (North West) circle (0.9em);
             \path [draw = \CurrentBGColor!70!black, line width = 0.1em, ] ($(frame.north west) + (1.15em, -0.05em)$) -- ++(-0.1em, 0) arc (0:270:1em) -- ++(0, -0.1em);
-            \node[font = \itshape, align = center, text = \CurrentFGColor] at ($(frame.north west) + (0.05em, -0.05em)$) {\ifUseIcon\includegraphics[width = 1.4em, height = 1.4em]{icons/#2}\else\scalebox{1.44}{#2}\fi};
+            \node[font = \itshape, align = center, text = \CurrentFGColor] at ($(frame.north west) + (0.05em, -0.05em)$) {\ifUseIcon\includegraphics[width = 1.2em, height = 1.2em]{icons/#2}\else\scalebox{1.2}{#2}\fi};
         },
+        ]
+        \RaggedRight\rule{0pt}{2ex}#3
+        \end{tcolorbox}%
+    }%
+}
+
+\NewDocumentCommand{\TCBBoxPlain}{ m m +m }{%
+    \visible<#1>{%
+        \begin{tcolorbox}[
+            left = 0.25em,
+            right = 0.25em,
+            bottom = 0pt,
+            top = 0pt,
+            coltext = \CurrentFGColor,
+            colback = \CurrentBGColor,
+            colframe = \CurrentBGColor!70!black,
+            toprule = 0.1em,
+            bottomrule = 0.1em,
+            leftrule = 0.1em,
+            rightrule = 0.1em,
+            enhanced,
+            interior style = {
+                top color = \CurrentBGColor,
+                bottom color = \CurrentBGColor!80!white,
+            },
         ]
         \RaggedRight#3
         \end{tcolorbox}%
     }%
 }
-% \ExplSyntaxOn
-% \cs_new:Npn \is_empty:N #1 {
-%     \tl_count:N #1
-% }
-% \NewExpandableDocumentCommand{\IsEmpty}{ m }{
-%     \is_empty:N { #1 }
-% }
-% \ExplSyntaxOff
 
-\NewDocumentCommand{\TCB}{ +m }{%
-    \UsePalette{\boxing@Palette}%
-    \ProcessItemArguments{\l@overlay}{\l@option}{\l@text}{#1}%
+
+\NewDocumentCommand{\TCBInternal}{ m +m }{%
+    \UsePaletteByNumber{\boxing@Palette}{\theCurrentItemNumber}%
+    \ProcessItemArguments{\l@overlay}{\l@option}{\l@text}{#2}%
     %! formatter = off
     \ifx\l@overlay\empty%
         \RenewExpandableDocumentCommand{\l@overlay}{}{1-}%
@@ -143,9 +162,17 @@
         \setbeamercolor{structure}{fg = \CurrentFGColor}%
     \fi%
     %! formatter = on
-    \TCBBox{\l@overlay}{\l@option}{\l@text}%
-    \StepPalette{\boxing@Palette}%
+    #1{\l@overlay}{\l@option}{\l@text}%
     \stepcounter{CurrentItemNumber}%
+}
+
+% interface commands
+\NewDocumentCommand{\TCB}{ +m }{%
+    \TCBInternal{\TCBBoxCircle}{#1}%
+}
+
+\NewDocumentCommand{\TCBsimple}{ +m }{%
+    \TCBInternal{\TCBBoxPlain}{#1}%
 }
 
 \newcounter{CurrentItemNumber}
@@ -178,5 +205,38 @@
     \end{tcbraster}%
     \endgroup%
 }
+
+\NewDocumentEnvironment{plainbox}{ O{} +b }{%
+    \begingroup%
+    \gatheritems{#2}%
+    %! formatter = off
+    \boxingset{continued = false}
+    \pgfkeys{%
+        /boxing/.cd,
+        #1
+    }%
+    \ifboxing@Continued\else
+    \ResetPalette{Colored Coolers}%
+    \setcounter{CurrentItemNumber}{1}%
+    \fi
+    %! formatter = on
+    \begin{tcbraster}[
+        raster columns = \boxing@Colums,
+        raster halign = center,
+        raster right skip = \dimexpr 1em * \kvtcb@raster@columns \relax,
+        nobeforeafter,
+        raster column skip = 0.5em,
+        raster row skip = \boxing@RowSkip,% \dimexpr \boxing@RowSkip - 12pt \relax,
+        raster equal height = \boxing@EqualHeight,
+%        /utils/exec = {%
+%        \pgfkeysalsofrom{/tcb/raster equal height = \boxing@EqualHeight}%
+%        },
+    ]
+        \loopthroughitemswithcommand{\TCBsimple}%
+        }{%
+    \end{tcbraster}%
+    \endgroup%
+}
+
 
 \endinput

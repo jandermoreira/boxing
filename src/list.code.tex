@@ -13,22 +13,41 @@
 }
 
 \NewCounter{boxing@ItemLevel}
-\NewCounter{boxing@Level1Counter}
-\NewCounter{boxing@Level2Counter}
+% \NewCounter{boxing@Level1Counter}
+% \NewCounter{boxing@Level2Counter}
 
 % \NewDocumentCommand{\boxing@ExecuteBeamerItem}{ m }{%
-%     \boxing@OriginalItem {\color{\CurrentBGColor}#3}%
+%     \boxing@OriginalItem#1%
 % }
 \NewDocumentCommand{\boxing@BeamerItem}{ m m +m }{%
+    \item >>>> ((#1)(#2)(#3))
+    % \IsEmptyOnce{#1}{%
+    %     \IsEmptyOnce{#2}{% no overlay, no option
+    %         \boxing@OriginalItem{\color{\CurrentBGColor} #3}%
+    %         \item Normal (<#1>[#2])
+    %     }{% no overlay, with option
+    %         \boxing@OriginalItem[#2] {\color{\CurrentBGColor} #3}%
+    %         \item[#1] Com estrela (<#1>[#2])
+    %     }%
+    % }{%
+    %     \IsEmptyOnce{#2}{% with overlay
+    %         \boxing@OriginalItem{{\color{\CurrentBGColor} #3}}%
+    %     }{% with overlay, with option
+    %         \boxing@OriginalItem{<#1>[#2] {\color{\CurrentBGColor} #3}}%
+    %     }%
+    % }
     %! formatter = off
-    \edef\l@overlayarg{#1}%
-    \ifx\l@overlayarg\empty%
-        \def\l@overlayarg{1-}%
-    \else
-        \def\l@overlayarg{#1}%
-    \fi%
-    \edef\l@optionarg{#2}%
-    \boxing@OriginalItem{\color{\CurrentBGColor}#3}
+    % \edef\l@overlayarg{#1}%
+    % \ifx\l@overlayarg\empty%
+    %     \def\l@overlayarg{1-}%
+    % \else
+    %     \def\l@overlayarg{#1}%
+    % \fi%
+    % \edef\l@optionarg{#2}%
+    % \begingroup
+    % \setbeamercolor{itemize/enumerate body}{fg = \CurrentBGColor}
+    % \boxing@OriginalItem{#3}
+    % \endgroup
     % \visible<\l@overlayarg>{
     %     \ifx\l@optionarg\empty%
     %         \boxing@OriginalItem{\color{\CurrentBGColor}#3}%
@@ -51,20 +70,21 @@
 }
 
 \NewDocumentCommand{\EnumerateItem}{ +m }{%
+    \ProcessItemArguments{\l@overlay}{\l@option}{\l@text}{#1}%
     \UsePalette{\boxing@Palette}%
     \StepPalette{\boxing@Palette}%
-    \ProcessItemArguments{\l@overlay}{\l@option}{\l@text}{#1}%
-    %
     %! formatter = off
-    \ifboxing@UseBeamer
-        \boxing@BeamerItem{\l@overlay}{\l@option}{\l@text}
-    \else
-        \boxing@NonBeamerItem{\l@option}{\l@text}
-    \fi
+    \item[---] >>>> #1 <\l@overlay>[\l@option](((\l@text)))\par
+    % \ifboxing@UseBeamer
+    %     \boxing@BeamerItem{\l@overlay}{\l@option}{\l@text}
+    % \else
+    %     \boxing@NonBeamerItem{\l@option}{\l@text}
+    % \fi
     %! formatter = on
     %
-    \StepCounter{boxing@Level\theboxing@ItemLevel Counter}%
+    % \StepCounter{boxing@Level\theboxing@ItemLevel Counter}%
 }
+
 \NewDocumentCommand{\boxing@SetEnumerate}{ }{
     \let\boxing@OriginalEnumerate\enumerate
     \let\endboxing@OriginalEnumerate\endenumerate
@@ -98,7 +118,7 @@
     \boxingset{#3}%
     \expandafter\let\expandafter\boxing@BeginEnvironment\csname #1\endcsname%
     \expandafter\let\expandafter\boxing@EndEnvironment\csname end#1\endcsname%
-%
+    %
     \IsEmpty{#2}{%
         \boxing@BeginEnvironment%
     }{%
@@ -111,7 +131,6 @@
     }{%
 }
 
-\newcommand\jander[1]{\item (#1)\par}
 
 \ExplSyntaxOn
 
@@ -128,14 +147,13 @@
     \int_while_do:nn { \l_current_item_int <= \l_number_gathered_items_int } {
         \exp_args:NNc \tl_set:No \l_item_body_tl { getitems@item@\int_use:N \l_current_item_int }
         \tl_set:No \l_argument_tl { \l_item_body_tl }
-        % \tl_show:N \l_item_body_tl
         \seq_put_right:cV { l_item_list_level_#1_seq } \l_argument_tl
         \int_set:Nn \l_current_item_int { \l_current_item_int + 1 }
     }
 
     % Process list
     \seq_map_inline:cn { l_item_list_level_#1_seq } {
-        #2 { ##1 }
+        \EnumerateItem { ##1 }
     }
     \seq_clear:c { l_item_list_level_#1_seq }
 }

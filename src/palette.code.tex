@@ -65,6 +65,19 @@
     \exp_args:Ne \use_palette:n { #1 }
 }
 
+% UsePalletByNumber:
+\cs_new:Npn \use_palette_by_number:nn #1#2 {
+    \tl_set:Nn \l_current_color_tl {
+        \seq_item:cn { g_#1_colors_seq  }{ #2 + 1 }
+    }
+    \exp_args:Ne \set_fg_bg:n \l_current_color_tl
+}
+\NewDocumentCommand{\UsePaletteByNumber}{ m m }{
+    \use_palette_by_number:nn { #1 } {
+        \int_mod:nn { #2 - 1 } { \seq_count:c { g_#1_colors_seq }  }
+    }
+}
+
 % StepPalette:
 \cs_new:Npn \step_palette:n #1 {
     \int_if_exist:NTF \l_index_int {} { \int_new:N \l_index_int }
@@ -174,7 +187,7 @@
 
 \NewPalette{Two}
 \SetPalette{Two}{
-    white on  Dark Jungle Green,
+    white on Dark Jungle Green,
     white on Hunter Green,
     white on Caput Mortuum,
     black on Gamboge,
