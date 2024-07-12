@@ -109,7 +109,7 @@
 
 % SetCounter:
 \cs_new:Npn \set_counter:nn #1#2 {
-    \int_set:cn { g_counter_#1_int } { #2 }
+    \int_gset:cn { g_counter_#1_int } { #2 }
 }
 \NewDocumentCommand{\SetCounter}{ m m }{
     \set_counter:nn { #1 } { #2 }
