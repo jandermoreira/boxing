@@ -13,9 +13,9 @@
 
 %! formatter = off
 \pgfkeys{
-% /boxing/.is family,
+    % /boxing/.is family,
     /boxing/.cd,
-% number of columns
+    % number of columns
     columns/.is choice,
     columns/auto/.code = {%
         \RenewDocumentCommand{\boxing@Colums}{}{\thenumgathereditems}%
@@ -34,9 +34,9 @@
         \RenewDocumentCommand{\boxing@EqualHeight}{}{all}%
     },
     row skip/.store in = \boxing@RowSkip,
-% continue numbering?
+    % continue numbering?
     continued/.is if = boxing@Continued,
-% palette
+    % palette
     palette/.code = {
         \RenewDocumentCommand{\boxing@Palette}{}{#1}%
     },
@@ -47,43 +47,51 @@
 
 
 % ProcessItemArguments: check if for \item optional arguments (<> for beamer
-% overlays and [] to replace default bullet)
-% #1: a macro to store overlay specifications -- <>
-% #2: a macro to store option options specifications -- []
-% #3: a macro to store the body only tokens
-% #4: the full contents of the item
+%   overlays and [] to replace default bullet)
+%   Detection code: A = angle brackets <> ; B = brackets; N = nothing
+% #1: a macro to store the detection code: A, B, AB or N
+% #2: a macro to store overlay specifications -- <>
+% #3: a macro to store option options specifications -- []
+% #4: a macro to store the body only tokens
+% #5: the full contents of the item
 \ExplSyntaxOn
-\cs_new:Npn \gather_beamer_item_options:NNNn #1#2#3#4 {
+\cs_new:Npn \gather_beamer_item_options:NNNn #1#2#3#4#5 {
     % Clear all output macros
     \tl_clear_new:N #1
     \tl_clear_new:N #2
     \tl_clear_new:N #3
+    \tl_clear_new:N #4
 
     % Check for overlay and options
-    \regex_extract_once:nnNTF { \A<(.*?)>\s*\[(.*?)\](.*) } { #4 } \g_item_structure_seq { % <> and []
-        \tl_set:Nn #1 { \seq_item:Nn \g_item_structure_seq { 2 } }
-        \tl_set:Nn #2 { \seq_item:Nn \g_item_structure_seq { 3 } }
-        \tl_set:Nn #3 { \seq_item:Nn \g_item_structure_seq { 4 } }
+    \regex_extract_once:nnNTF { \A\s*<(.*?)>\s*\[(.*?)\]\s*(.*) } { #5 } \g_item_structure_seq { % <> and []
+        \tl_set:Nn #1 { AB }
+        \tl_set:Nn #2 { \seq_item:Nn \g_item_structure_seq { 2 } }
+        \tl_set:Nn #3 { \seq_item:Nn \g_item_structure_seq { 3 } }
+        \tl_set:Nn #4 { \seq_item:Nn \g_item_structure_seq { 4 } }
     } {
-        \regex_extract_once:nnNTF { \A\[(.*?)\]\s*<(.*?)>(.*) } { #4 } \g_item_structure_seq { % [] and <>
-            \tl_gset:Nn #1 { \seq_item:Nn \g_item_structure_seq { 3 } }
-            \tl_gset:Nn #2 { \seq_item:Nn \g_item_structure_seq { 2 } }
-            \tl_gset:Nn #3 { \seq_item:Nn \g_item_structure_seq { 4 } }
+        \regex_extract_once:nnNTF { \A\s*\[(.*?)\]\s*<(.*?)>\s*(.*) } { #5 } \g_item_structure_seq { % [] and <>
+            \tl_set:Nn #1 { AB }
+            \tl_set:Nn #2 { \seq_item:Nn \g_item_structure_seq { 3 } }
+            \tl_set:Nn #3 { \seq_item:Nn \g_item_structure_seq { 2 } }
+            \tl_set:Nn #4 { \seq_item:Nn \g_item_structure_seq { 4 } }
         } {
-            \regex_extract_once:nnNTF { \A<(.*?)>(.*) } { #4 } \g_item_structure_seq { % only <>
-                \tl_gset:Nn #1 { \seq_item:Nn \g_item_structure_seq { 2 } }
-                \tl_gset:Nn #3 { \seq_item:Nn \g_item_structure_seq { 3 } }
+            \regex_extract_once:nnNTF { \A\s*<(.*?)>\s*(.*) } { #5 } \g_item_structure_seq { % only <>
+                \tl_set:Nn #1 { A }
+                \tl_set:Nn #2 { \seq_item:Nn \g_item_structure_seq { 2 } }
+                \tl_set:Nn #4 { \seq_item:Nn \g_item_structure_seq { 3 } }
             } {
-                \regex_extract_once:nnNTF { \A\[(.*?)\](.*) } { #4 } \g_item_structure_seq { % only []
-                    \tl_gset:Nn #2 { \seq_item:Nn \g_item_structure_seq { 2 } }
+                \regex_extract_once:nnNTF { \A\s*\[(.*?)\]\s*(.*) } { #5 } \g_item_structure_seq { % only []
+                    \tl_set:Nn #1 { B }
+                    \tl_set:Nn #3 { \seq_item:Nn \g_item_structure_seq { 2 } }
                     % \tl_clear_new:N \temp
                     % \tl_set_eq:Nn \temp #2
                     % \tl_show:N \temp
-                    \tl_gset:Nn #3 { \seq_item:Nn \g_item_structure_seq { 3 } }
+                    \tl_set:Nn #4 { \seq_item:Nn \g_item_structure_seq { 3 } }
                     % \item SOMENTE~[~]\par
                     % Result (#1, #2, #3) from (#4)
                 } { % only text
-                    \tl_gset:Nn #3 { #4 }
+                    \tl_set:Nn #1 { N }
+                    \tl_set:Nn #4 { #5 }
                     % \item SIMPLES
                 }
             }
@@ -93,8 +101,8 @@
     % \tl_show:N #2
     % \tl_show:N #3
 }
-\NewDocumentCommand{\ProcessItemArguments}{ m m m +m }{
-    \gather_beamer_item_options:NNNn { #1 } { #2 } { #3 } { #4 }
+\NewDocumentCommand{\ProcessItemArguments}{ m m m m +m }{
+    \gather_beamer_item_options:NNNn { #1 } { #2 } { #3 } { #4 } { #5}
 }
 
 % NewCounter:
