@@ -7,41 +7,54 @@
 \usepackage[brazilian]{babel}
 \usepackage[sfdefault]{FiraSans}
 
-% \usetheme{Monjolinho}
+% \usetheme{Warsaw}
 
 \title{Lists}
 \author{Jander Moreira}
 
-\usepackage[enumerate]{boxing}
+\usepackage[list]{boxing}
 \boxingset{palette = rgb}
 
 \begin{document}
-\maketitle
+% \maketitle
 
 \begin{frame}
+
+    \beamerdefaultoverlayspecification{<*>}
+
     List:
 
-    \begin{enumerate}[<+->]
-        \item Item simples 1
-        \item [3]Item simples 2
-        % \item[*] Item com rótulo
-        % \item<2>Item só com overlay
-        % \item[*]<2>Item com rótulo e overlay
-        % \item<2>[*]Item com overlay e rótulo
-        % \item Item simples 3
+    \begin{enumerate}
+        \item Um
+        \item Dois
+        \begin{itemize}
+            \item This
+            \item is
+            \begin{enumerate}
+                \item a
+                \item [$\equiv$]list
+                \item<2> of
+                \item wishes
+            \end{enumerate}
+        \end{itemize}
+        \item Três
     \end{enumerate}
 
-    % \begin{enumerate}[<+->]
-    %     \item This
-    %     \item is
-    %     \begin{enumerate}
-    %         \item a
-    %         \item [$\equiv$]list
-    %         \item of
-    %     \end{enumerate}
-    %     \item <3> items
-    %     \item test
-    % \end{enumerate}
+% \begin{enumerate}
+%     \item Item simples 1
+%     \item<2-> Item simples 2
+%     \item[*] Item com rótulo
+%     % \item<2>Item só com overlay
+%     \item[*]<2>Item com rótulo e overlay
+%     \item<2>[*]Item com overlay e rótulo
+%     \item Item simples 3
+% \end{enumerate}
+
+% \pause
+% \bigskip
+%     \item items
+%     \item test
+% \end{itemize}
 \end{frame}
 
 \end{document}

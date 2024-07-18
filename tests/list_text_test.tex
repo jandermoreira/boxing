@@ -1,6 +1,6 @@
 %! Autor = Jander Moreira
 %! Data = 29/12/2022
-\documentclass[12pt]{article}
+\documentclass[10pt, twocolumn]{article}
 \usepackage[T1]{fontenc}
 \usepackage{titling}
 \setlength{\droptitle}{-3cm}
@@ -11,37 +11,67 @@
 \author{Jander Moreira}
 \date{\monthname, \the\year}
 
-\usepackage{enumitem}
-\usepackage[enumerate]{boxing}
+\usepackage{enumerate}
+\usepackage[list]{boxing}
 
 \begin{document}
 \maketitle
 
-List:
-\begin{enumerate}
-    [label = {\Roman*)}]%<palette = Midnight Waters>
-    \item First \textbf{item}
-    \fbox{teste}
-    \item Other item $y = x^2$
-    \begin{enumerate}
-        \item Doisss
+% Enumerate list:%
+% \begin{enumerate}
+%     \item[*] r
+%     \item g
+%     \begin{enumerate}
+%         \item r
+%         \item g
+%         \item b
+%     \end{enumerate}
+%     \item b
+%     \item[$\alpha$] r
+%     \item g
+%     \item b
+%     \item r and $E = mc^2$
+%     \item g
+%     \item b
+%     \begin{enumerate}
+%         \item Um
+%         \item <3>Dois
+%         \item Três
+%     \end{enumerate}
+%     \item Último!
+% \end{enumerate}
+%
+% E depois.
+%
+% \pagebreak
+
+Itemize list:
+
+\begin{itemize}
+    \item[*] r
+    \item g
+    \begin{enumerate}[I)]
+        \item r
+        \item[>>] g
+        \item b
+        \item r
     \end{enumerate}
-    \item Yet another item
-    \begin{equation}
-        E = mc^2\label{eq:equation}
-    \end{equation}
-    \item And maybe more
-    \item [$\triangle$]And more
-    \item And more
-    \item And more
-    \begin{enumerate}
-        \item Um
-        \item <3>Dois
-        \item Três
-    \end{enumerate}
-    \item 3
-    \item 2\ldots
-    \item And the \textit{last}
-\end{enumerate}
+    \item b
+    \item[$\alpha$] r
+    \item g
+    % \item b
+    % \item r and $E = mc^2$
+    % \item g
+    % \item b
+    % \begin{enumerate}
+    %     \item Um
+    %     \item <3>Dois
+    %     \item Três
+    % \end{enumerate}
+    % \item Último!
+\end{itemize}
+
+\vfill
+Depois.
 
 \end{document}
