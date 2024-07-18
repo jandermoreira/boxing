@@ -11,8 +11,8 @@
 \seq_new:N \g_palette_list_seq
 \tl_new:N \g_current_fg_color_tl
 \tl_new:N \g_current_bg_color_tl
-\tl_set:Nn \g_current_fg_color_tl { . }
-\tl_set:Nn \g_current_bg_color_tl { . }
+\tl_gset:Nn \g_current_fg_color_tl { . }
+\tl_gset:Nn \g_current_bg_color_tl { . }
 \seq_new:N \l_color_seq
 
 % NewPalette:
@@ -80,14 +80,15 @@
 
 % StepPalette:
 \cs_new:Npn \step_palette:n #1 {
-    \int_if_exist:NTF \l_index_int {} { \int_new:N \l_index_int }
+    \int_zero_new:N \l_index_int
     \int_set:Nn \l_index_int { \int_use:c { g_#1_current_int } }
     \tl_gset:Nn \g_current_fg_color_tl {
-        \seq_item:cn { g_#1_colors_seq  }{ \int_eval:n {\int_use:N  \l_index_int + 1} }
+        \seq_item:cn { g_#1_colors_seq  } { \int_eval:n {\l_index_int + 1} }
     }
-    \int_gset:cn { g_#1_current_int } {
+    \int_set:cn { g_#1_current_int } {
         \int_mod:nn { \l_index_int + 1 } { \seq_count:c { g_#1_colors_seq } }
     }
+    % (\g_current_fg_color_tl : \g_current_bg_color_tl)
 }
 \NewDocumentCommand{\StepPalette}{ m }{
     \step_palette:n { #1 }
@@ -113,7 +114,7 @@
 \NewExpandableDocumentCommand{\LoopPaletteList}{ +m }{
     \seq_map_inline:Nn \g_palette_list_seq {
         \tl_clear_new:N \CurrentPalette
-        \tl_gset:Nn \CurrentPalette { ##1 }
+        \tl_set:Nn \CurrentPalette { ##1 }
         #1
     }
 }
@@ -123,7 +124,7 @@
     \ResetPalette{#1}
     \seq_map_inline:cn { g_#1_colors_seq } {
         \tl_clear_new:N \CurrentColor
-        \tl_gset:Nn \CurrentColor { ##1 }
+        \tl_set:Nn \CurrentColor { ##1 }
         \UsePalette{#1}
         #2
         \StepPalette{#1}
