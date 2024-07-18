@@ -1,14 +1,15 @@
 %! Package = boxing
 %! Author = Jander Moreira
-%! Date = 26/10/2022
+%! Date = 2022--2024
 
 \NeedsTeXFormat{LaTeX2e}
 \ProvidesPackage{boxing}[2022/10/26 Colorful text boxes and items made easy]
 
-% Variables
-\newif\ifboxing@ModuleList
-\newif\ifboxing@UseEnumerate
-\newif\ifboxing@UseItemize
+\RequirePackage{etoolbox}
+
+\newbool{boxing@ModuleList}
+\newbool{boxing@UseItemize}
+\newbool{boxing@UseEnumerate}
 
 % Options
 \RequirePackage{pgfopts}
@@ -22,14 +23,30 @@
 
 \ProcessPgfOptions{/boxing}
 
+\ifbool{boxing@ModuleList}{
+    \booltrue{boxing@UseEnumerate}
+    \booltrue{boxing@UseItemize}
+}{
+    \ifbool{boxing@UseEnumerate}{
+        \booltrue{boxing@ModuleList}
+    }
+    \ifbool{boxing@UseItemize}{
+        \booltrue{boxing@ModuleList}
+    }
+}
+
 % Beamer: some parts of the code are aware to use some Beamer resources,
 % such as templates, colors and fonts. The command \visible is used to
 % handle overlays in frames.
-\newif\ifboxing@UseBeamer
+\newbool{boxing@UseBeamer}
 \@ifclassloaded{beamer}{
-    \boxing@UseBeamertrue
+    \booltrue{boxing@UseBeamer}
+    % \ifbool{boxing@ModuleList}{
+    %     \PackageWarning{boxing}{list, enumerate, and itemize disabled for beamer class.}
+    %     \boolfalse{boxing@ModuleList}  % won't work for beamer
+    % }{}
 }{
-    \boxing@UseBeamerfalse
+    \boolfalse{boxing@UseBeamer}
     \NewDocumentCommand{\visible}{ d<> m }{#2}  % \visible is a fake command 
 }
 
@@ -49,18 +66,10 @@
 \input{boxes.code}
 
 % Optional module
-%! formatter = off
-\ifboxing@UseEnumerate
-    \boxing@ModuleListtrue
-\fi
-\ifboxing@UseItemize
-    \boxing@ModuleListtrue
-\fi
-\ifboxing@ModuleList
+\ifbool{boxing@ModuleList}{
     % \PackageWarning{boxing}{Loading 'list.code'}
     \input{list.code}
-\fi
-%! formatter = on
+}
 
 % Important stuff
 \CheckIfPackageAlreadyLoaded{enumitem}

@@ -3,165 +3,134 @@
 
 %! suppress = MultipleIncludes
 
-\let\boxing@OriginalItem\item
+\RequirePackage{etoolbox}
+\RequirePackage{xcolor}
 
-\newif\ifboxing@UseEnumItem
-\@ifpackageloaded{enumitem}{
-    \boxing@UseEnumItemtrue
-}{
-    \boxing@UseEnumItemfalse
-}
-
-\NewCounter{boxing@ItemLevel}
-% \NewCounter{boxing@Level1Counter}
-% \NewCounter{boxing@Level2Counter}
-
-% \NewDocumentCommand{\boxing@ExecuteBeamerItem}{ m }{%
-%     \boxing@OriginalItem#1%
-% }
-\NewDocumentCommand{\boxing@BeamerItem}{ m m +m }{%
-    \item >>>> ((#1)(#2)(#3))
-    % \IsEmptyOnce{#1}{%
-    %     \IsEmptyOnce{#2}{% no overlay, no option
-    %         \boxing@OriginalItem{\color{\CurrentBGColor} #3}%
-    %         \item Normal (<#1>[#2])
-    %     }{% no overlay, with option
-    %         \boxing@OriginalItem[#2] {\color{\CurrentBGColor} #3}%
-    %         \item[#1] Com estrela (<#1>[#2])
-    %     }%
-    % }{%
-    %     \IsEmptyOnce{#2}{% with overlay
-    %         \boxing@OriginalItem{{\color{\CurrentBGColor} #3}}%
-    %     }{% with overlay, with option
-    %         \boxing@OriginalItem{<#1>[#2] {\color{\CurrentBGColor} #3}}%
-    %     }%
-    % }
-    %! formatter = off
-    % \edef\l@overlayarg{#1}%
-    % \ifx\l@overlayarg\empty%
-    %     \def\l@overlayarg{1-}%
-    % \else
-    %     \def\l@overlayarg{#1}%
-    % \fi%
-    % \edef\l@optionarg{#2}%
-    % \begingroup
-    % \setbeamercolor{itemize/enumerate body}{fg = \CurrentBGColor}
-    % \boxing@OriginalItem{#3}
-    % \endgroup
-    % \visible<\l@overlayarg>{
-    %     \ifx\l@optionarg\empty%
-    %         \boxing@OriginalItem{\color{\CurrentBGColor}#3}%
-    %     \else
-    %         \boxing@OriginalItem[\l@optionarg]{\color{\CurrentBGColor}#3}%
-    %     \fi
-    % }
-    %! formatter = on
-}
-
-\NewDocumentCommand{\boxing@NonBeamerItem}{ m +m }{%
-    %! formatter = off
-    \def\l@optionarg{#1}%
-    \ifx\l@optionarg\empty%
-        \boxing@OriginalItem{\color{\CurrentBGColor}#2}%
-    \else%
-        \boxing@OriginalItem[#1]{\color{\CurrentBGColor}#2}%
-    \fi%
-    %! formatter = on
-}
-
-\NewDocumentCommand{\EnumerateItem}{ +m }{%
-    \ProcessItemArguments{\l@overlay}{\l@option}{\l@text}{#1}%
-    \UsePalette{\boxing@Palette}%
-    \StepPalette{\boxing@Palette}%
-    %! formatter = off
-    \item[---] >>>> #1 <\l@overlay>[\l@option](((\l@text)))\par
-    % \ifboxing@UseBeamer
-    %     \boxing@BeamerItem{\l@overlay}{\l@option}{\l@text}
-    % \else
-    %     \boxing@NonBeamerItem{\l@option}{\l@text}
-    % \fi
-    %! formatter = on
-    %
-    % \StepCounter{boxing@Level\theboxing@ItemLevel Counter}%
-}
-
-\NewDocumentCommand{\boxing@SetEnumerate}{ }{
-    \let\boxing@OriginalEnumerate\enumerate
-    \let\endboxing@OriginalEnumerate\endenumerate
-    \RenewDocumentEnvironment{enumerate}{ O{} D<>{} +b }{
-        \begin{boxingitems}{boxing@OriginalEnumerate}[##1]%
-            <##2>
-            ##3
-                }{
-        \end{boxingitems}
-    }
-}
-%! formatter = off
-\ifboxing@UseEnumerate
-    \boxing@SetEnumerate
-\fi
-%! formatter = on
-
-% colorenumerate: enumerated list using a color palette
-% #1: environment to be used (e.g. itemize, enumerate)
-% #2: optional parameters to the environment in #1 (brackets)
-% #3: boxing options (angle brackets)
-\newif\ifboxing@UseOptionalArguments
-\NewDocumentCommand{\boxing@BeginEnvironment}{}{}
-\NewDocumentCommand{\boxing@EndEnvironment}{}{}
-\NewDocumentCommand{\l@environmentoptions}{}{}
-\NewDocumentEnvironment{boxingitems}{ m O{} D<>{} +b }{%
-    \begingroup%
-    \ResetPalette{\boxing@Palette}%
-    \StepCounter{boxing@ItemLevel}%
-    \gatheritems{#4}%
-    \boxingset{#3}%
-    \expandafter\let\expandafter\boxing@BeginEnvironment\csname #1\endcsname%
-    \expandafter\let\expandafter\boxing@EndEnvironment\csname end#1\endcsname%
-    %
-    \IsEmpty{#2}{%
-        \boxing@BeginEnvironment%
-    }{%
-        \boxing@BeginEnvironment[#2]%
-    }%
-    \loopthroughitemswithcommand{\EnumerateItem}%
-    \boxing@EndEnvironment%
-    \AddToCounter{boxing@ItemLevel}{-1}
-    \endgroup%
-    }{%
-}
-
+\def\listpalette{Toasted Peach}
 
 \ExplSyntaxOn
 
-\cs_new:Npn \execute_list_of_items:nn #1#2 {
-    \int_zero_new:N \l_number_gathered_items_int
-    \int_set:Nn \l_number_gathered_items_int { \thenumgathereditems }
-
-    % Put all items in a list (getitems won't work for nested environments)
-    \seq_clear_new:c { l_item_list_level_#1_seq }
-    \tl_clear_new:N \l_item_body_tl
-    \int_zero_new:N \l_current_item_int
-    \tl_clear_new:N \l_argument_tl
-    \int_set:Nn \l_current_item_int { 1 }
-    \int_while_do:nn { \l_current_item_int <= \l_number_gathered_items_int } {
-        \exp_args:NNc \tl_set:No \l_item_body_tl { getitems@item@\int_use:N \l_current_item_int }
-        \tl_set:No \l_argument_tl { \l_item_body_tl }
-        \seq_put_right:cV { l_item_list_level_#1_seq } \l_argument_tl
-        \int_set:Nn \l_current_item_int { \l_current_item_int + 1 }
+\NewDocumentCommand{\ParseBody}{ +m }{
+    \tl_clear_new:N \l_input_tl
+    \tl_set:Nn \l_input_tl { #1 }
+    \tl_replace_all:Nnn \l_input_tl { ~ } { \c_space_tl }
+    \int_zero_new:N \l_level_int
+    \tl_gclear_new:N \g_temp_tokens_tl
+    \tl_clear_new:N \l_begin_tl
+    \tl_set:Nn \l_begin_tl { \begin }
+    \tl_clear_new:N \l_end_tl
+    \tl_set:Nn \l_end_tl { \end }
+    \tl_clear_new:N \l_item_tl
+    \tl_set:Nn \l_item_tl { \item }
+    \tl_clear_new:N \l_current_token_tl
+    \tl_map_inline:Nn \l_input_tl {
+        \tl_set:Nn \l_current_token_tl { ##1 }
+        \tl_if_eq:NNTF \l_current_token_tl \l_begin_tl {
+            \int_add:Nn \l_level_int { 1 }
+        }{}
+        \tl_if_eq:NNTF \l_current_token_tl \l_end_tl {
+            \int_add:Nn \l_level_int { -1 }
+        }{}
+        \tl_if_eq:NNTF \l_current_token_tl \l_item_tl {
+            \int_compare:nNnTF { \l_level_int } > { 0 } {
+                \tl_put_right:Nn \g_temp_tokens_tl { \@fake@item }  % mark internal \item
+            }{
+                \tl_put_right:Nn \g_temp_tokens_tl { \item }
+            }
+        }{
+            \int_compare:nNnTF { \tl_count:N \l_current_token_tl } > { 1 } {
+                \tl_put_right:Nn \g_temp_tokens_tl { {##1} }
+            }{
+                \tl_put_right:Nn \g_temp_tokens_tl {  ##1  }
+            }
+        }
     }
+    \seq_gclear_new:N \g_processed_seq
+    \seq_gset_split:NnV \g_processed_seq { \item } \g_temp_tokens_tl
+    \seq_pop_left:NN \g_processed_seq \l_tmpa_tl  % discard anything before first \item
+}
 
-    % Process list
-    \seq_map_inline:cn { l_item_list_level_#1_seq } {
-        \EnumerateItem { ##1 }
+\NewExpandableDocumentCommand{\SplitItem}{ +m } {
+    \ProcessItemArguments{\l_split_code_tl}{\l_in_angle_tl}{\l_in_brackets_tl}{\l_text_tl}{ #1 }
+}
+
+\NewDocumentCommand{\Show}{ +m }{
+    \tl_map_inline:nn { #1 } { (\string ##1)\par }
+}
+
+\NewDocumentCommand{\ShowText}{ >{ \TrimSpaces } +m }{%
+    \textcolor{\CurrentBGColor}{#1}%
+}
+
+\NewDocumentCommand{\ItemizeParts}{ }{
+    \tl_clear_new:N \l_one_item_tl
+    \seq_map_inline:Nn \g_processed_seq {
+        \UsePalette{\listpalette}%
+        \StepPalette{\listpalette}
+        \group_begin:
+        \color{\CurrentBGColor}
+        \tl_set:Nn \l_one_item_tl { ##1 }
+        \tl_replace_all:Nnn \l_one_item_tl { \@fake@item } { \item }
+        \exp_args:No \SplitItem { \l_one_item_tl }
+        \exp_args:Ne \ifstrequal {\l_split_code_tl} { AB }{
+            \visible<\l_in_angle_tl>{
+                \expandafter\item \expandafter[ \l_in_brackets_tl ] \expandafter\ShowText\expandafter{\l_text_tl}
+            }
+        }{
+            \exp_args:Ne \ifstrequal {\l_split_code_tl} { A }{
+                \visible<\l_in_angle_tl>{\item \expandafter\ShowText\expandafter{\l_text_tl}}
+            }{
+                \exp_args:Ne \ifstrequal {\l_split_code_tl} { B }{
+                    \expandafter\item \expandafter[ \l_in_brackets_tl ] \expandafter\ShowText\expandafter{\l_text_tl}
+                }{
+                    \item \expandafter\ShowText\expandafter{\l_text_tl}
+                }
+            }
+        }
+        \group_end:
     }
-    \seq_clear:c { l_item_list_level_#1_seq }
 }
-\NewExpandableDocumentCommand{\ExecuteListOfItems}{ m m }{
-    \execute_list_of_items:nn { #1 } { #2 }
-}
+
 \ExplSyntaxOff
 
-\RenewDocumentCommand{\loopthroughitemswithcommand}{ m }{%
-    \ExecuteListOfItems{\The{boxing@ItemLevel}}{#1}
-}
+
+\ifbool{boxing@UseItemize}{%
+    \cslet{itemizeoriginal}{\itemize}%
+    \cslet{enditemizeoriginal}{\enditemize}%
+    \RenewDocumentEnvironment{itemize}{ o +b }{%
+        \begingroup%
+        % \colorlet{boxing@savecolor}{.}%
+        \ParseBody{#2}%
+        \ResetPalette{\listpalette}%
+        \IfValueTF{#1}{%
+            \itemizeoriginal[#1]%
+        }{%
+            \itemizeoriginal%
+        }%
+        \ItemizeParts%
+        \enditemizeoriginal%
+        % \color{boxing@savecolor}{.}%
+        \endgroup%
+        }{}%
+}{}
+
+\ifbool{boxing@UseEnumerate}{%
+    \cslet{enumerateoriginal}{\enumerate}%
+    \cslet{endenumerateoriginal}{\endenumerate}%
+    \RenewDocumentEnvironment{enumerate}{ o +b }{%
+        \begingroup%
+        % \colorlet{boxing@savecolor}{.}%
+        \ParseBody{#2}%
+        \ResetPalette{\listpalette}%
+        \IfValueTF{#1}{%
+            \enumerateoriginal[#1]%
+        }{%
+            \enumerateoriginal%
+        }%
+        \ItemizeParts%
+        \endenumerateoriginal%
+        % \color{boxing@savecolor}{.}%
+        \endgroup%
+        }{}%
+}{}
+
