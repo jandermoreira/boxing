@@ -1,4 +1,7 @@
 # boxing
 $\LaTeX$ package to draw boxes
 
-This code is $\textsf{\large\color{red}under development}$ and it's not ready for the general public.
+## This project is deprecated
+This project has been replaced by **palettize-boxes**, a module in the package **palettize** (https://github.com/jandermoreira/palettize).
+
+This code will no longer be supported.

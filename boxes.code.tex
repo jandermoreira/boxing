@@ -145,7 +145,7 @@
 
 \NewDocumentCommand{\TCBInternal}{ m +m }{%
     \UsePaletteByNumber{\boxing@Palette}{\theCurrentItemNumber}%
-    \ProcessItemArguments{\l@overlay}{\l@option}{\l@text}{#2}%
+    \ProcessItemArguments{\l@code}{\l@overlay}{\l@option}{\l@text}{#2}%
     %! formatter = off
     \ifx\l@overlay\empty%
         \RenewExpandableDocumentCommand{\l@overlay}{}{1-}%

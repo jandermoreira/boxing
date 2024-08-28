@@ -10,7 +10,7 @@
 
 \ExplSyntaxOn
 
-\NewDocumentCommand{\ParseBody}{ +m }{
+\NewDocumentCommand{\ParseForItems}{ +m }{
     \tl_clear_new:N \l_input_tl
     \tl_set:Nn \l_input_tl { #1 }
     \tl_replace_all:Nnn \l_input_tl { ~ } { \c_space_tl }
@@ -100,7 +100,7 @@
     \RenewDocumentEnvironment{itemize}{ o +b }{%
         \begingroup%
         % \colorlet{boxing@savecolor}{.}%
-        \ParseBody{#2}%
+        \ParseForItems{#2}%
         \ResetPalette{\listpalette}%
         \IfValueTF{#1}{%
             \itemizeoriginal[#1]%
@@ -120,7 +120,7 @@
     \RenewDocumentEnvironment{enumerate}{ o +b }{%
         \begingroup%
         % \colorlet{boxing@savecolor}{.}%
-        \ParseBody{#2}%
+        \ParseForItems{#2}%
         \ResetPalette{\listpalette}%
         \IfValueTF{#1}{%
             \enumerateoriginal[#1]%
